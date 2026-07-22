@@ -10,6 +10,17 @@ define('ROOT', dirname(SYSTEM_ROOT).'/');
 define('PAYPAGE_ROOT', SYSTEM_ROOT.'pages/');
 define('TEMPLATE_ROOT', ROOT.'template/');
 define('PLUGIN_ROOT', ROOT.'plugins/');
+
+$currentScript = realpath(isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '');
+$userRoot = realpath(ROOT.'user');
+if($currentScript && $userRoot && strpos($currentScript, $userRoot.DIRECTORY_SEPARATOR) === 0){
+	$allowedUserScripts = ['openid.php', 'douyinoauth.php'];
+	if(!in_array(basename($currentScript), $allowedUserScripts, true)){
+		http_response_code(404);
+		exit;
+	}
+}
+
 date_default_timezone_set('Asia/Shanghai');
 $date = date("Y-m-d H:i:s");
 

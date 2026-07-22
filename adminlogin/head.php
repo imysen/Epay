@@ -75,7 +75,7 @@ if($admin_cdnpublic==1){
               <?php if(class_exists('\\lib\\AlipaySATF\\AlipaySATF')){?><li><a href="./satf_transfer.php">安全发转账记录</a></li><?php }?>
             </ul>
           </li>
-		  <li class="<?php echo checkIfActive('ulist,glist,gedit,group,record,uset,domain,ustat,invitecode,uexport')?>">
+		  <li class="<?php echo checkIfActive('ulist,glist,gedit,group,record,uset,domain,ustat,invitecode,uexport,onecode')?>">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> 商户管理<b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="./ulist.php">用户列表</a></li>
@@ -84,6 +84,7 @@ if($admin_cdnpublic==1){
 			  <li><a href="./record.php">资金明细</a></li>
         <li><a href="./ustat.php">支付统计</a></li>
         <?php if($conf['pay_domain_forbid']==1 || $conf['pay_domain_open']==1){?><li><a href="./domain.php">授权域名</a></li><?php }?>
+        <li><a href="./onecode.php">聚合收款码牌</a></li>
         <?php if($conf['reg_open']==2){?><li><a href="./invitecode.php">邀请码管理</a></li><?php }?>
             </ul>
           </li>
@@ -99,7 +100,7 @@ if($admin_cdnpublic==1){
         <li><a href="./applyments_merchant.php">进件商户管理</a></li><?php }?>
             </ul>
           </li>
-		  <li class="<?php echo checkIfActive('set,gonggao,set_wxkf')?>">
+		  <li class="<?php echo checkIfActive('set,set_wxkf')?>">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"></i> 系统设置<b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="./set.php?mod=site">网站信息配置</a></li>
@@ -107,11 +108,8 @@ if($admin_cdnpublic==1){
         <li><a href="./set.php?mod=risk">风控检测配置</a><li>
         <li><a href="./set.php?mod=settle">结算规则配置</a><li>
 			  <li><a href="./set.php?mod=transfer">转账付款配置</a><li>
-			  <li><a href="./set.php?mod=oauth">快捷登录配置</a><li>
+        <li><a href="./set.php?mod=oauth">付款授权配置</a><li>
         <li><a href="./set.php?mod=notice">消息提醒配置</a><li>
-			  <li><a href="./set.php?mod=certificate">实名认证配置</a><li>
-			  <li><a href="./gonggao.php">网站公告配置</a></li>
-			  <li><a href="./set.php?mod=template">首页模板配置</a><li>
 			  <li><a href="./set.php?mod=mail">邮箱与短信配置</a><li>
 			  <li><a href="./set.php?mod=upimg">网站Logo上传</a><li>
 			  <li><a href="./set.php?mod=cron">计划任务配置</a><li>

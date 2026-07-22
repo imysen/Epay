@@ -35,16 +35,16 @@ if($my=='add')
 <form method="POST" onsubmit="return addUser(this)">
 <h4><font color="blue">基本信息</font></h4>
 <div class="form-group">
-<label>手机号(登录账号):</label><br>
+<label>手机号:</label><br>
 <input type="text" class="form-control" name="phone" value="" placeholder="和邮箱不能同时为空">
 </div>
 <div class="form-group">
-<label>邮箱(登录账号):</label><br>
+<label>邮箱:</label><br>
 <input type="text" class="form-control" name="email" value="" placeholder="和手机号不能同时为空">
 </div>
 <div class="form-group">
-<label>登录密码:</label><br>
-<input type="text" class="form-control" name="pwd" value="" placeholder="留空则只能使用密钥登录">
+<label>商户不可登录，仅使用下方API密钥对接</label><br>
+<input type="hidden" name="pwd" value="">
 </div>
 <div class="form-group">
 <label>用户组:</label><br>
@@ -117,11 +117,11 @@ $group=\lib\Channel::getGroup($row['gid']);
 <div class="col-sm-12 col-md-6">
 <h4><font color="blue">基本信息</font></h4>
 <div class="form-group">
-<label>手机号(登录账号):</label><br>
+<label>手机号:</label><br>
 <input type="text" class="form-control" name="phone" value="<?php echo $row['phone']?>" placeholder="和邮箱不能同时为空">
 </div>
 <div class="form-group">
-<label>邮箱(登录账号):</label><br>
+<label>邮箱:</label><br>
 <input type="text" class="form-control" name="email" value="<?php echo $row['email']?>" placeholder="和手机号不能同时为空">
 </div>
 <div class="form-group">
@@ -223,8 +223,8 @@ $group=\lib\Channel::getGroup($row['gid']);
 </div>
 <h4><font color="blue">密码修改</font></h4>
 <div class="form-group">
-<label>重置登录密码:</label><br>
-<input type="text" class="form-control" name="pwd" value="" placeholder="不重置密码请留空">
+<label>商户登录已禁用</label><br>
+<input type="hidden" name="pwd" value="">
 </div>
 </div>
 </div>

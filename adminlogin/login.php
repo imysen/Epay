@@ -92,7 +92,7 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
 }elseif($islogin==1){
 	exit("<script language='javascript'>alert('您已登录！');window.location.href='./';</script>");
 }
-$title='用户登录';
+$title='管理员登录';
 include './head.php';
 ?>
   <nav class="navbar navbar-fixed-top navbar-default">

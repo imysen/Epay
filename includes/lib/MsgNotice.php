@@ -115,7 +115,7 @@ class MsgNotice
             if($conf['wxnotice_tpl_order_money']) $data[$conf['wxnotice_tpl_order_money']] = ['value'=>'¥'.$param['money']];
             if($conf['wxnotice_tpl_order_time']) $data[$conf['wxnotice_tpl_order_time']] = ['value'=>$param['time']];
             if($conf['wxnotice_tpl_order_outno']) $data[$conf['wxnotice_tpl_order_outno']] = ['value'=>$param['out_trade_no']];
-            $jumpurl = $siteurl.'user/order.php';
+            $jumpurl = '';
         }elseif($scene == 'settle'){
             $template_id = $conf['wxnotice_tpl_settle'];
             $data = [];
@@ -124,7 +124,7 @@ class MsgNotice
             if($conf['wxnotice_tpl_settle_money']) $data[$conf['wxnotice_tpl_settle_money']] = ['value'=>'¥'.$param['money']];
             if($conf['wxnotice_tpl_settle_realmoney']) $data[$conf['wxnotice_tpl_settle_realmoney']] = ['value'=>'¥'.$param['realmoney']];
             if($conf['wxnotice_tpl_settle_time']) $data[$conf['wxnotice_tpl_settle_time']] = ['value'=>$param['time']];
-            $jumpurl = isset($param['jumpurl']) ? $param['jumpurl'] : $siteurl.'user/settle.php';
+            $jumpurl = isset($param['jumpurl']) ? $param['jumpurl'] : '';
         }elseif($scene == 'login'){
             $template_id = $conf['wxnotice_tpl_login'];
             $data = [];
@@ -133,7 +133,7 @@ class MsgNotice
             if($conf['wxnotice_tpl_login_name']) $data[$conf['wxnotice_tpl_login_name']] = ['value'=>$conf['sitename']];
             if($conf['wxnotice_tpl_login_ip']) $data[$conf['wxnotice_tpl_login_ip']] = ['value'=>$param['clientip']];
             if($conf['wxnotice_tpl_login_iploc']) $data[$conf['wxnotice_tpl_login_iploc']] = ['value'=>$param['ipinfo']];
-            $jumpurl = $siteurl.'user/';
+            $jumpurl = '';
         }elseif($scene == 'complain'){
             $template_id = $conf['wxnotice_tpl_complain'];
             $data = [];
@@ -144,7 +144,7 @@ class MsgNotice
             if($conf['wxnotice_tpl_complain_reason']) $data[$conf['wxnotice_tpl_complain_reason']] = ['value'=>$param['content']];
             if($conf['wxnotice_tpl_complain_type']) $data[$conf['wxnotice_tpl_complain_type']] = ['value'=>$param['type']];
             if($conf['wxnotice_tpl_complain_name']) $data[$conf['wxnotice_tpl_complain_name']] = ['value'=>$param['name']];
-            $jumpurl = $siteurl.'user/';
+            $jumpurl = '';
         }elseif($scene == 'balance'){
             $template_id = $conf['wxnotice_tpl_balance'];
             $data = [];
@@ -152,7 +152,7 @@ class MsgNotice
             if($conf['wxnotice_tpl_balance_time']) $data[$conf['wxnotice_tpl_balance_time']] = ['value'=>$param['time']];
             if($conf['wxnotice_tpl_balance_money']) $data[$conf['wxnotice_tpl_balance_money']] = ['value'=>$param['money']];
             if($conf['wxnotice_tpl_balance_msg']) $data[$conf['wxnotice_tpl_balance_msg']] = ['value'=>'为避免造成订单失败，请及时充值'];
-            $jumpurl = $siteurl.'user/';
+            $jumpurl = '';
         }
         if(empty($template_id) || empty($wid)) return false;
     

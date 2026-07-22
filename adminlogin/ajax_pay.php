@@ -580,9 +580,10 @@ case 'testpay':
 	if($conf['pay_maxmoney']>0 && $money>$conf['pay_maxmoney'])exit('{"code":-1,"msg":"最大支付金额是'.$conf['pay_maxmoney'].'元"}');
 	if($conf['pay_minmoney']>0 && $money<$conf['pay_minmoney'])exit('{"code":-1,"msg":"最小支付金额是'.$conf['pay_minmoney'].'元"}');
 	$trade_no=date("YmdHis").rand(11111,99999);
-	$return_url=$siteurl.'user/test.php?ok=1&trade_no='.$trade_no;
+	$return_url=$siteurl.'payok.html';
+	$notify_url=$siteurl.'payok.html';
 	$domain=getdomain($return_url);
-	if(!$DB->exec("INSERT INTO `pre_order` (`trade_no`,`out_trade_no`,`uid`,`tid`,`addtime`,`name`,`money`,`type`,`channel`,`subchannel`,`realmoney`,`getmoney`,`notify_url`,`return_url`,`domain`,`ip`,`param`,`status`) VALUES (:trade_no, :out_trade_no, :uid, 3, NOW(), :name, :money, :type, :channel, :subchannel, :realmoney, :getmoney, :notify_url, :return_url, :domain, :clientip, :param, 0)", [':trade_no'=>$trade_no, ':out_trade_no'=>$trade_no, ':uid'=>$conf['test_pay_uid'], ':name'=>$name, ':money'=>$money, ':type'=>$row['type'], ':channel'=>$channel, ':subchannel'=>$subchannel, ':realmoney'=>$money, ':getmoney'=>$money, ':notify_url'=>$return_url, ':return_url'=>$return_url, ':domain'=>$domain, ':clientip'=>$clientip, ':param'=>$param]))exit('{"code":-1,"msg":"创建订单失败，请返回重试！"}');
+	if(!$DB->exec("INSERT INTO `pre_order` (`trade_no`,`out_trade_no`,`uid`,`tid`,`addtime`,`name`,`money`,`type`,`channel`,`subchannel`,`realmoney`,`getmoney`,`notify_url`,`return_url`,`domain`,`ip`,`param`,`status`) VALUES (:trade_no, :out_trade_no, :uid, 3, NOW(), :name, :money, :type, :channel, :subchannel, :realmoney, :getmoney, :notify_url, :return_url, :domain, :clientip, :param, 0)", [':trade_no'=>$trade_no, ':out_trade_no'=>$trade_no, ':uid'=>$conf['test_pay_uid'], ':name'=>$name, ':money'=>$money, ':type'=>$row['type'], ':channel'=>$channel, ':subchannel'=>$subchannel, ':realmoney'=>$money, ':getmoney'=>$money, ':notify_url'=>$notify_url, ':return_url'=>$return_url, ':domain'=>$domain, ':clientip'=>$clientip, ':param'=>$param]))exit('{"code":-1,"msg":"创建订单失败，请返回重试！"}');
 	$result = ['code'=>0, 'msg'=>'succ', 'url'=>'./testsubmit.php?trade_no='.$trade_no];
 	exit(json_encode($result));
 break;

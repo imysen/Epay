@@ -2,10 +2,10 @@
 $is_defend = true;
 include("./inc.php");
 if(isset($_GET['ucode'])){
-	$code=trim($_GET['ucode']);
-    if(!preg_match('/^[a-zA-Z0-9]{1,32}$/',$code)) showerror('参数错误');
+	$code=strtoupper(trim($_GET['ucode']));
+    if(!preg_match('/^[A-Z0-9]{1,32}$/',$code)) showerror('参数错误');
     $uid = $DB->findColumn('onecode', 'uid', ['code' => $code]);
-    if(!$uid) showerror('当前码牌未绑定商户<br/>码牌编号：'.$code.'<br/><p class="weui-btn-area"><a href="/user/onecode.php?bind='.$code.'" class="weui-btn weui-btn_primary">点此绑定</a></p>');
+    if(!$uid) showerror('当前码牌尚未绑定收款商户，请联系管理员');
 }elseif(isset($_GET['merchant'])){
 	$merchant=trim($_GET['merchant']);
 	$uid = authcode($merchant, 'DECODE', SYS_KEY);

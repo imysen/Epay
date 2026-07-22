@@ -11,7 +11,12 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
     <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
 <?php
 $mod=isset($_GET['mod'])?$_GET['mod']:null;
-$mods=['site'=>'网站信息','pay'=>'支付相关','risk'=>'风控检测','settle'=>'结算规则','transfer'=>'转账付款','oauth'=>'快捷登录','notice'=>'消息提醒','certificate'=>'实名认证','template'=>'首页模板','gonggao'=>'公告与排版','mail'=>'邮箱与短信','upimg'=>'LOGO设置','iptype'=>'IP地址','cron'=>'计划任务','proxy'=>'中转代理','account'=>'修改密码'];
+$mods=['site'=>'网站信息','pay'=>'支付相关','risk'=>'风控检测','settle'=>'结算规则','transfer'=>'转账付款','oauth'=>'付款授权','notice'=>'消息提醒','mail'=>'邮箱与短信','upimg'=>'LOGO设置','iptype'=>'IP地址','cron'=>'计划任务','proxy'=>'中转代理','account'=>'修改密码'];
+$allowedMods=array_merge(array_keys($mods), ['paypwd_n','account_n','mailtest']);
+if($mod!==null && !in_array($mod, $allowedMods, true)){
+	http_response_code(404);
+	exit;
+}
 ?>
 <ul class="nav nav-pills">
 	<?php foreach($mods as $key=>$name){echo '<li class="'.($key==$mod?'active':null).'"><a href="set.php?mod='.$key.'">'.$name.'</a></li>';} ?>
@@ -69,26 +74,26 @@ if($mod=='site'){
 	  <div class="col-sm-10"><input type="text" name="appurl" value="<?php echo $conf['appurl']; ?>" class="form-control"/></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-2 control-label">用户验证方式</label>
-	  <div class="col-sm-10"><select class="form-control" name="verifytype" default="<?php echo $conf['verifytype']?>"><option value="0">邮箱验证</option><option value="1">手机验证</option></select></div>
+	  <label class="col-sm-2 control-label">运行模式</label>
+	  <div class="col-sm-10"><p class="form-control-static">单管理员模式（商户注册、商户中心及公开测试支付已禁用）</p></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-2 control-label">开放注册</label>
-	  <div class="col-sm-10"><select class="form-control" name="reg_open" default="<?php echo $conf['reg_open']?>"><option value="1">开启</option><option value="0">关闭</option><option value="2">仅邀请注册</option></select></div>
+	  <label class="col-sm-2 control-label" style="display:none">开放注册</label>
+	  <div class="col-sm-10" style="display:none"><input type="hidden" name="reg_open" value="0"/></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-2 control-label">注册后可不填结算账户</label>
-	  <div class="col-sm-10"><select class="form-control" name="reg_input_settle" default="<?php echo $conf['reg_input_settle']?>"><option value="0">否</option><option value="1">是</option></select><font color="green">如不做平台代收，可设置为是</font></div>
+	  <label class="col-sm-2 control-label" style="display:none">注册后可不填结算账户</label>
+	  <div class="col-sm-10" style="display:none"><input type="hidden" name="reg_input_settle" value="<?php echo $conf['reg_input_settle']?>"/></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-2 control-label">开启注册审核</label>
-	  <div class="col-sm-10"><select class="form-control" name="user_review" default="<?php echo $conf['user_review']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
+	  <label class="col-sm-2 control-label" style="display:none">开启注册审核</label>
+	  <div class="col-sm-10" style="display:none"><input type="hidden" name="user_review" value="<?php echo $conf['user_review']?>"/></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-2 control-label">注册付费</label>
-	  <div class="col-sm-10"><select class="form-control" name="reg_pay" default="<?php echo $conf['reg_pay']?>"><option value="1">开启</option><option value="0">关闭</option></select></div>
+	  <label class="col-sm-2 control-label" style="display:none">注册付费</label>
+	  <div class="col-sm-10" style="display:none"><input type="hidden" name="reg_pay" value="0"/></div>
 	</div><br/>
-	<div id="reg_pay_div" style="<?php echo $conf['reg_pay']==0?'display:none;':null; ?>">
+	<div id="reg_pay_div" style="display:none;">
 	<div class="form-group">
 	  <label class="col-sm-2 control-label">注册付费金额</label>
 	  <div class="col-sm-10"><input type="text" name="reg_pay_price" value="<?php echo $conf['reg_pay_price']; ?>" class="form-control"/></div>
@@ -99,10 +104,10 @@ if($mod=='site'){
 	  <div class="col-sm-10"><select class="form-control" name="user_settings_edit" default="<?php echo $conf['user_settings_edit']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-2 control-label">测试支付</label>
-	  <div class="col-sm-10"><select class="form-control" name="test_open" default="<?php echo $conf['test_open']?>"><option value="1">开启</option><option value="0">关闭</option></select></div>
+	  <label class="col-sm-2 control-label" style="display:none">测试支付</label>
+	  <div class="col-sm-10" style="display:none"><input type="hidden" name="test_open" value="0"/></div>
 	</div><br/>
-	<div id="setform3" style="<?php echo $conf['test_open']==0?'display:none;':null; ?>">
+	<div id="setform3" style="display:none;">
 	<div class="form-group">
 	  <label class="col-sm-2 control-label">测试支付收款商户ID</label>
 	  <div class="col-sm-10"><input type="text" name="test_pay_uid" value="<?php echo $conf['test_pay_uid']; ?>" class="form-control" placeholder="填写在本站注册的商户UID"/></div>
@@ -146,10 +151,10 @@ if($mod=='site'){
 	  </select></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-2 control-label">首页显示模式</label>
-	  <div class="col-sm-10"><select class="form-control" name="homepage" default="<?php echo $conf['homepage']?>"><option value="0">默认显示首页</option><option value="1">直接跳转登录页面</option><option value="2">显示其它指定网址</option></select></div>
+	  <label class="col-sm-2 control-label">根路径重定向</label>
+	  <div class="col-sm-10"><input type="text" name="root_redirect_url" value="<?php echo isset($conf['root_redirect_url'])?$conf['root_redirect_url']:''; ?>" class="form-control" placeholder="留空则访问根路径返回 404"/><font color="green">访问站点根路径 <code>/</code> 时重定向到此地址，必须以 <code>http://</code> 或 <code>https://</code> 开头；留空则返回 HTTP 404</font></div>
 	</div><br/>
-	<div class="form-group" id="setform4" style="<?php echo $conf['homepage']!=2?'display:none;':null; ?>">
+	<div class="form-group" id="setform4" style="display:none;">
 	  <label class="col-sm-2 control-label">显示网址URL</label>
 	  <div class="col-sm-10"><input type="text" name="homepage_url" value="<?php echo $conf['homepage_url']; ?>" class="form-control" placeholder="将以frame方式显示"/></div>
 	</div><br/>
@@ -454,31 +459,31 @@ $(document).ready(function(){
 </div>
 </div>
 <div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">支付宝快捷登录相关设置</h3></div>
+<div class="panel-heading"><h3 class="panel-title">支付宝付款授权相关设置</h3></div>
 <div class="panel-body">
   <form onsubmit="return saveSetting(this)" method="post" class="form-horizontal" role="form">
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">网页快捷登录通道</label>
+	  <label class="col-sm-3 control-label">网页付款授权通道</label>
 	  <div class="col-sm-9"><select class="form-control" name="alipay_web_login" default="<?php echo $conf['alipay_web_login']?>"><option value="0">关闭</option><?php foreach($alipay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">用于非支付宝官方插件的生活号支付时使用。需在支付宝应用内配置<b>授权回调地址</b></font></div>
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">支付宝官方插件也用上述通道登录</label>
-	  <div class="col-sm-9"><select class="form-control" name="alipay_web_login_all" default="<?php echo $conf['alipay_web_login_all']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后，支付宝官方支付插件需要快捷登录时，也全部使用上述选择的通道，不再使用当前支付用的通道登录，避免需要重复配置授权回调地址。如需开启，务必使用uid模式，不能用openid模式</font></div>
+	  <div class="col-sm-9"><select class="form-control" name="alipay_web_login_all" default="<?php echo $conf['alipay_web_login_all']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后，支付宝官方支付插件需要付款授权时，也全部使用上述选择的通道，不再使用当前支付用的通道登录，避免需要重复配置授权回调地址。如需开启，务必使用uid模式，不能用openid模式</font></div>
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">支付宝小程序通道</label>
 	  <div class="col-sm-9"><select class="form-control" name="alipay_mini_login" default="<?php echo $conf['alipay_mini_login']?>"><option value="0">关闭</option><?php foreach($alipay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">用于所有插件的支付宝小程序支付。需在支付宝应用内配置<b>服务器域名白名单</b>，并将指定的页面源码加入到你的小程序里面，才能用于发起支付。如用于非当前应用支付，还需在JSAPI支付签约页面关联小程序AppID</font></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">支付宝手机网站支付前快捷登录</label>
+	  <label class="col-sm-3 control-label">支付宝手机网站支付前付款授权</label>
 	  <div class="col-sm-9"><select class="form-control" name="alipay_wappaylogin" default="<?php echo $conf['alipay_wappaylogin']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后，可在手机网站支付前获取用户支付宝uid，用于黑名单屏蔽。电脑网站支付不支持</font></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">支付宝当面付支付前快捷登录</label>
+	  <label class="col-sm-3 control-label">支付宝当面付支付前付款授权</label>
 	  <div class="col-sm-9"><select class="form-control" name="alipay_qrpaylogin" default="<?php echo $conf['alipay_qrpaylogin']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后，可在当面付/订单码支付前获取用户支付宝uid，用于黑名单屏蔽。其他支付不支持</font></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">支付宝快捷登录获取用户手机号</label>
+	  <label class="col-sm-3 control-label">支付宝付款授权获取用户手机号</label>
 	  <div class="col-sm-9"><select class="form-control" name="alipay_getmobile" default="<?php echo $conf['alipay_getmobile']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">需要先在支付宝应用里面隐私申请手机号码字段，开启后，可在支付前获取用户手机号并保存。</font></div>
 	</div><br/>
 	<div class="form-group">
@@ -496,16 +501,16 @@ $(document).ready(function(){
 $wxpay_channel = $DB->getAll("SELECT * FROM pre_weixin WHERE type=0");
 ?>
 <div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">微信快捷登录相关设置</h3></div>
+<div class="panel-heading"><h3 class="panel-title">微信付款授权相关设置</h3></div>
 <div class="panel-body">
   <form onsubmit="return saveSetting(this)" method="post" class="form-horizontal" role="form">
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">微信扫码支付前快捷登录</label>
+	  <label class="col-sm-3 control-label">微信扫码支付前付款授权</label>
 	  <div class="col-sm-9"><select class="form-control" name="wxpay_qrpaylogin" default="<?php echo $conf['wxpay_qrpaylogin']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后，可在非微信官方插件扫码支付前获取用户openid，用于黑名单屏蔽。官方插件或Native支付不支持。</font></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">微信快捷登录公众号</label>
-	  <div class="col-sm-9"><select class="form-control" name="wxpay_web_login" default="<?php echo $conf['wxpay_web_login']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">用于非微信官方插件的扫码支付前快捷登录判断黑名单。</font></div>
+	  <label class="col-sm-3 control-label">微信付款授权公众号</label>
+	  <div class="col-sm-9"><select class="form-control" name="wxpay_web_login" default="<?php echo $conf['wxpay_web_login']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">用于非微信官方插件的扫码支付前付款授权判断黑名单。</font></div>
 	</div><br/>
 	<div class="form-group">
 	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
@@ -1335,29 +1340,30 @@ $("select[name='ocr_type']").change(function(){
 	$wxapplet_channel = $DB->getAll("SELECT * FROM pre_weixin WHERE type=1");
 ?>
 <div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">快捷登录配置</h3></div>
+<div class="panel-heading"><h3 class="panel-title">付款授权与公众号配置</h3></div>
 <div class="panel-body">
+<div class="alert alert-info">这些通道用于付款用户授权、OpenID获取和微信公众号消息提醒，不会开启商户后台登录。</div>
   <form onsubmit="return saveSetting(this)" method="post" class="form-horizontal" role="form">
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">QQ快捷登录</label>
-	  <div class="col-sm-9"><select class="form-control" name="login_qq" default="<?php echo $conf['login_qq']?>"><option value="0">关闭</option><option value="1">QQ互联官方快捷登录</option><option value="2">手机QQ扫码登录</option><option value="3">彩虹聚合登录</option></select><a href="https://connect.qq.com" target="_blank" rel="noreferrer">QQ互联申请地址</a>，回调地址填写：<?php echo $siteurl.'user/connect.php';?></div>
+	  <label class="col-sm-3 control-label">QQ付款授权</label>
+	  <div class="col-sm-9"><select class="form-control" name="login_qq" default="<?php echo $conf['login_qq']?>"><option value="0">关闭</option><option value="1">QQ互联官方付款授权</option><option value="2">手机QQ扫码登录</option><option value="3">彩虹聚合登录</option></select><a href="https://connect.qq.com" target="_blank" rel="noreferrer">QQ互联申请地址</a>，回调地址填写：<?php echo $siteurl.'user/connect.php';?></div>
 	</div><br/>
 	<div id="setform1" style="<?php echo $conf['login_qq']!=1?'display:none;':null; ?>">
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">QQ快捷登录Appid</label>
+	  <label class="col-sm-3 control-label">QQ付款授权Appid</label>
 	  <div class="col-sm-9"><input type="text" name="login_qq_appid" value="<?php echo $conf['login_qq_appid']; ?>" class="form-control"/></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">QQ快捷登录Appkey</label>
+	  <label class="col-sm-3 control-label">QQ付款授权Appkey</label>
 	  <div class="col-sm-9"><input type="text" name="login_qq_appkey" value="<?php echo $conf['login_qq_appkey']; ?>" class="form-control"/></div>
 	</div><br/>
 	</div>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">支付宝快捷登录</label>
+	  <label class="col-sm-3 control-label">支付宝付款授权</label>
 	  <div class="col-sm-9"><select class="form-control" name="login_alipay" default="<?php echo $conf['login_alipay']?>"><option value="0">关闭</option><?php foreach($alipay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?><option value="-1">彩虹聚合登录</option></select><font color="green">请先添加支付插件为alipay的支付通道</font><br/><a href="https://openhome.alipay.com/platform/appManage.htm" target="_blank" rel="noreferrer">申请地址</a>，应用内添加功能"获取会员信息"，授权回调地址填写：<?php echo $siteurl.'user/oauth.php';?></div>
 	</div><br/>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">微信快捷登录</label>
+	  <label class="col-sm-3 control-label">微信付款授权</label>
 	  <div class="col-sm-9"><select class="form-control" name="login_wx" default="<?php echo $conf['login_wx']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?><option value="-1">彩虹聚合登录</option></select><font color="green">请先<a href="./pay_weixin.php" target="_blank">添加一个微信公众号</a>。需要服务号，并配置网页授权域名：<?php echo $_SERVER['HTTP_HOST'];?></font></div>
 	</div><br/>
 	<div id="setform2" style="<?php echo $conf['login_wx']<=0?'display:none;':null; ?>">
@@ -1367,8 +1373,8 @@ $("select[name='ocr_type']").change(function(){
 	</div><br/>
 	</div>
 	<div class="form-group">
-	  <label class="col-sm-3 control-label">微信小程序快捷登录</label>
-	  <div class="col-sm-9"><select class="form-control" name="login_wxa" default="<?php echo $conf['login_wxa']?>"><option value="0">关闭</option><?php foreach($wxapplet_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先<a href="./pay_weixin.php" target="_blank">添加一个微信小程序</a>。用于微信小程序客户端快捷登录</font></div>
+	  <label class="col-sm-3 control-label">微信小程序付款授权</label>
+	  <div class="col-sm-9"><select class="form-control" name="login_wxa" default="<?php echo $conf['login_wxa']?>"><option value="0">关闭</option><?php foreach($wxapplet_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先<a href="./pay_weixin.php" target="_blank">添加一个微信小程序</a>。用于微信小程序客户端付款授权</font></div>
 	</div><br/>
 	<div class="form-group">
 	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
@@ -1644,9 +1650,9 @@ if($errmsg2){
 </div>
 <div class="panel-footer">
 <span class="glyphicon glyphicon-info-sign"></span>
-用于消息提醒的公众号，和快捷登录使用的公众号一样，也即必须同时开启微信快捷登录才可以使用该功能。<br/>
+用于消息提醒的公众号，和付款授权使用的公众号一样，也即必须同时开启微信付款授权才可以使用该功能。<br/>
 需申请模板消息的模板，不能用订阅消息！模板参数名类似于thingx、character_stringx、amountx等，在微信模板详情页面查看，无相关参数的可留空。如果不知道模板参数名怎么填写的，可先仔细阅读<a href="https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#%E5%8F%91%E9%80%81%E6%A8%A1%E6%9D%BF%E6%B6%88%E6%81%AF" target="_blank">发送模板消息接口文档</a>。<br/>
-<b>需要用户在用户中心绑定微信快捷登录，并手动开启才能收到。</b>
+<b>用户在付款流程中授权后才能收到。</b>
 </div>
 </div>
 <div class="panel panel-primary">

@@ -31,7 +31,7 @@ if(!empty($paytype) && isset($_SESSION['paypage_typeid']) && isset($_SESSION['pa
 	}
 }
 
-$userrow = $DB->getRow("SELECT `mode`,`ordername`,`channelinfo`,`money`,`pay_minmoney`,`pay_maxmoney` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
+$userrow = $DB->getRow("SELECT `gid`,`mode`,`ordername`,`channelinfo`,`money`,`pay_minmoney`,`pay_maxmoney` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
 
 if($userrow['pay_maxmoney']>0 && $money>$userrow['pay_maxmoney'])showerrorjson('最大支付金额是'.$userrow['pay_maxmoney'].'元');
 if($userrow['pay_minmoney']>0 && $money<$userrow['pay_minmoney'])showerrorjson('最小支付金额是'.$userrow['pay_minmoney'].'元');

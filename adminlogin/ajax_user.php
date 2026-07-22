@@ -437,10 +437,6 @@ case 'addUser':
 
 	$uid = $DB->insert('user', $data);
 	if($uid!==false){
-		if(!empty($_POST['pwd'])){
-			$pwd = getMd5Pwd(trim($_POST['pwd']), $uid);
-			$DB->update('user', ['pwd'=>$pwd], ['uid'=>$uid]);
-		}
 		exit(json_encode(['code'=>0, 'uid'=>$uid, 'key'=>$key]));
 	}else{
 		exit('{"code":-1,"msg":"添加商户失败！'.$DB->error().'"}');
@@ -479,10 +475,6 @@ case 'editUser':
 	];
 
 	if($DB->update('user', $data, ['uid'=>$uid])!==false){
-		if(!empty($_POST['pwd'])){
-			$pwd = getMd5Pwd(trim($_POST['pwd']), $uid);
-			$DB->update('user', ['pwd'=>$pwd], ['uid'=>$uid]);
-		}
 		exit('{"code":0}');
 	}else{
 		exit('{"code":-1,"msg":"修改商户信息失败！'.$DB->error().'"}');
@@ -527,6 +519,10 @@ case 'delUser':
 	$uid=intval($_GET['uid']);
 	if($DB->exec("DELETE FROM pre_user WHERE uid='$uid'")){
 		$DB->exec("DELETE FROM pre_subchannel WHERE uid='$uid'");
+		$tableExists=$DB->getColumn("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=:table", [':table'=>DBQZ.'_onecode']);
+		if($tableExists){
+			$DB->update('onecode', ['uid'=>null, 'bindtime'=>null], ['uid'=>$uid]);
+		}
 		exit('{"code":0}');
 	}else{
 		exit('{"code":-1,"msg":"删除商户失败！'.$DB->error().'"}');

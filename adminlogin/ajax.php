@@ -111,6 +111,7 @@ case 'getcount':
 break;
 
 case 'set':
+	unset($_POST['reg_open'], $_POST['reg_pay'], $_POST['test_open']);
 	if(isset($_POST['localurl'])){
 		if(!empty($_POST['localurl']) && (substr($_POST['localurl'],0,4)!='http' || substr($_POST['localurl'],-1)!='/'))exit('{"code":-1,"msg":"回调专用网址格式错误"}');
 	}
@@ -120,9 +121,17 @@ case 'set':
 	if(isset($_POST['login_apiurl'])){
 		if(!empty($_POST['login_apiurl']) && (substr($_POST['login_apiurl'],0,4)!='http' || substr($_POST['login_apiurl'],-1)!='/'))exit('{"code":-1,"msg":"聚合登录API接口地址格式错误"}');
 	}
+	if(isset($_POST['root_redirect_url'])){
+		$root_redirect_url = trim($_POST['root_redirect_url']);
+		if($root_redirect_url !== '' && substr($root_redirect_url,0,7)!='http://' && substr($root_redirect_url,0,8)!='https://')exit('{"code":-1,"msg":"根路径重定向地址必须以 http:// 或 https:// 开头"}');
+		$_POST['root_redirect_url'] = $root_redirect_url;
+	}
 	foreach($_POST as $k=>$v){
 		saveSetting($k, $v);
 	}
+	saveSetting('reg_open', 0);
+	saveSetting('reg_pay', 0);
+	saveSetting('test_open', 0);
 	$ad=$CACHE->clear();
 	if($ad)exit('{"code":0,"msg":"succ"}');
 	else exit('{"code":-1,"msg":"修改设置失败['.$DB->error().']"}');
