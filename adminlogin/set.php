@@ -18,9 +18,13 @@ if($mod!==null && !in_array($mod, $allowedMods, true)){
 	exit;
 }
 ?>
-<ul class="nav nav-pills">
-	<?php foreach($mods as $key=>$name){echo '<li class="'.($key==$mod?'active':null).'"><a href="set.php?mod='.$key.'">'.$name.'</a></li>';} ?>
-</ul>
+<div class="ep-page-head">
+  <div><h1>系统设置</h1><div class="desc">配置平台基础信息、支付、风控、结算和安全选项。</div></div>
+</div>
+<div class="ep-settings-nav">
+	<?php foreach($mods as $key=>$name){echo '<a class="'.($key==$mod?'active':null).'" href="set.php?mod='.$key.'">'.htmlspecialchars($name).'</a>';} ?>
+</div>
+<div class="ep-settings-body">
 <?php
 $conf=$CACHE->pre_fetch();
 if($mod=='site'){
@@ -1135,205 +1139,6 @@ $(document).ready(function(){
 })
 </script>
 <?php
-}elseif($mod=='certificate'){
-	$alipay_channel = $DB->getAll("SELECT * FROM pre_channel WHERE plugin='alipay'");
-?>
-<div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">实名认证接口配置</h3></div>
-<div class="panel-body">
-  <form onsubmit="return saveSetting(this)" method="post" class="form-horizontal" role="form">
-    <div class="form-group">
-	  <label class="col-sm-3 control-label">是否开启实名认证</label>
-	  <div class="col-sm-9"><select class="form-control" name="cert_open" default="<?php echo $conf['cert_open']?>"><option value="0">关闭</option><option value="1">支付宝身份验证</option><option value="3">支付宝实名信息验证</option><option value="5">阿里云金融级实人认证</option><option value="6">蚂蚁数科实人认证</option><option value="4">微信扫码实名认证</option><option value="2">手机号三要素实名认证</option></select></div>
-	</div><br/>
-	<div id="setform2" style="<?php echo $conf['cert_open']!=1&&$conf['cert_open']!=3?'display:none;':null; ?>">
-    <div class="form-group">
-	  <label class="col-sm-3 control-label">支付宝通道选择</label>
-	  <div class="col-sm-9"><select class="form-control" name="cert_channel" default="<?php echo $conf['cert_channel']?>"><option value="0">关闭</option><?php foreach($alipay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先添加支付插件为alipay的支付通道</font></div>
-	</div><br/>
-	</div>
-	<div id="setform3" style="<?php echo $conf['cert_open']!=2?'display:none;':null; ?>">
-    <div class="form-group">
-	  <label class="col-sm-3 control-label">APPCODE</label>
-	  <div class="col-sm-9"><input type="text" name="cert_appcode" value="<?php echo $conf['cert_appcode']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	</div>
-	<div id="setform4" style="<?php echo $conf['cert_open']!=4?'display:none;':null; ?>">
-    <div class="form-group">
-	  <label class="col-sm-3 control-label">腾讯云SecretId</label>
-	  <div class="col-sm-9"><input type="text" name="cert_qcloudid" value="<?php echo $conf['cert_qcloudid']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">腾讯云SecretKey</label>
-	  <div class="col-sm-9"><input type="text" name="cert_qcloudkey" value="<?php echo $conf['cert_qcloudkey']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	</div>
-	<div id="setform5" style="<?php echo $conf['cert_open']!=5?'display:none;':null; ?>">
-    <div class="form-group">
-	  <label class="col-sm-3 control-label">阿里云AccessKeyId</label>
-	  <div class="col-sm-9"><input type="text" name="cert_aliyunid" value="<?php echo $conf['cert_aliyunid']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">阿里云AccessKeySecret</label>
-	  <div class="col-sm-9"><input type="text" name="cert_aliyunkey" value="<?php echo $conf['cert_aliyunkey']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">阿里云认证场景ID</label>
-	  <div class="col-sm-9"><input type="text" name="cert_aliyunsceneid" value="<?php echo $conf['cert_aliyunsceneid']; ?>" class="form-control" placeholder="阿里云金融级实人认证-接入设置里面"/></div>
-	</div><br/>
-	</div>
-	<div id="setform6" style="<?php echo $conf['cert_open']!=6?'display:none;':null; ?>">
-    <div class="form-group">
-	  <label class="col-sm-3 control-label">蚂蚁数科AccessId</label>
-	  <div class="col-sm-9"><input type="text" name="cert_antiid" value="<?php echo $conf['cert_antiid']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">蚂蚁数科AccessSecret</label>
-	  <div class="col-sm-9"><input type="text" name="cert_antikey" value="<?php echo $conf['cert_antikey']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">蚂蚁数科认证场景ID</label>
-	  <div class="col-sm-9"><input type="text" name="cert_antisceneid" value="<?php echo $conf['cert_antisceneid']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	</div>
-	<div id="setform1" style="<?php echo $conf['cert_open']==0?'display:none;':null; ?>">
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">开启企业认证方式</label>
-	  <div class="col-sm-9"><select class="form-control" name="cert_corpopen" default="<?php echo $conf['cert_corpopen']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
-	</div><br/>
-	<div id="setform6" style="<?php echo $conf['cert_corpopen']!=1?'display:none;':null; ?>">
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">企业信息校验接口APPCODE</label>
-	  <div class="col-sm-9"><input type="text" name="cert_appcode2" value="<?php echo $conf['cert_appcode2']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	</div>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">商户强制认证</label>
-	  <div class="col-sm-9"><select class="form-control" name="cert_force" default="<?php echo $conf['cert_force']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后商户必须实名认证，才能正常使用支付接口收款</font></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">实名认证费用</label>
-	  <div class="col-sm-9"><input type="text" name="cert_money" value="<?php echo $conf['cert_money']; ?>" class="form-control" placeholder="留空或0为免认证费用"/><font color="green">支付宝身份验证接口是1元/次。设置实名认证费用后，认证成功将从商户余额扣除，如果是付费注册商户建议免认证费</font></div>
-	</div><br/>
-	</div>
-	<div class="form-group">
-	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
-	 </div>
-	</div>
-  </form>
-</div>
-<div class="panel-footer">
-<span class="glyphicon glyphicon-info-sign"></span>
-<br/><b>支付宝身份验证：</b><a href="https://b.alipay.com/signing/productDetailV2.htm?productId=I1080300001000010588" target="_blank" rel="noreferrer">申请地址</a>，该接口费用1元/人，支持人脸识别，同一个人重复验证不重复收费
-<br/><b>支付宝实名信息验证：</b><a href="https://opendocs.alipay.com/open/repo-00hddl" target="_blank" rel="noreferrer">申请地址</a>，该接口完全免费，授权回调地址填写：<?php echo $siteurl.'user/oauth.php';?>
-<br/><b>阿里云金融级实人认证：</b><a href="https://www.aliyun.com/product/cloudauth" target="_blank" rel="noreferrer">申请地址</a>｜<a href="https://usercenter.console.aliyun.com/#/manage/ak" target="_blank" rel="noreferrer">获取密钥</a>，该接口费用1元/人，支持人脸识别，同一个人重复验证不重复收费。无需签约，只需要阿里云企业认证账号即可开通。
-<br/><b>微信扫码实名认证：</b><a href="https://cloud.tencent.com/product/faceid" target="_blank" rel="noreferrer">申请地址</a>｜<a href="https://console.cloud.tencent.com/cam/capi" target="_blank" rel="noreferrer">获取密钥</a>，接口0.3元/次
-<br/><b>手机号三要素实名认证：</b><a href="https://market.aliyun.com/products/57000002/cmapi031847.html" target="_blank" rel="noreferrer">点击进入</a>
-<br/><b>企业信息校验接口：</b><a href="https://market.aliyun.com/products/56928005/cmapi00043309.html" target="_blank" rel="noreferrer">点击进入</a>
-</div>
-</div>
-<div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">OCR文字识别接口配置</h3></div>
-<div class="panel-body">
-  <form onsubmit="return saveSetting(this)" method="post" class="form-horizontal" role="form">
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">文字识别接口</label>
-	  <div class="col-sm-9"><select class="form-control" name="ocr_type" default="<?php echo $conf['ocr_type']??'aliyun'?>"><option value="aliyun">阿里云</option><option value="baidu">百度云</option></select></div>
-	</div><br/>
-	<div id="set_ocr_aliyun" style="<?php echo $conf['ocr_type']=='baidu'?'display:none;':null; ?>">
-    <div class="form-group">
-	  <label class="col-sm-3 control-label">阿里云AccessKeyId</label>
-	  <div class="col-sm-9"><input type="text" name="ocr_aliyunid" value="<?php echo $conf['ocr_aliyunid']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">阿里云AccessKeySecret</label>
-	  <div class="col-sm-9"><input type="text" name="ocr_aliyunkey" value="<?php echo $conf['ocr_aliyunkey']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	</div>
-	<div id="set_ocr_baidu" style="<?php echo $conf['ocr_type']!='baidu'?'display:none;':null; ?>">
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">百度云API Key</label>
-	  <div class="col-sm-9"><input type="text" name="ocr_baiduid" value="<?php echo $conf['ocr_baiduid']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	<div class="form-group">
-	  <label class="col-sm-3 control-label">百度云Secret Key</label>
-	  <div class="col-sm-9"><input type="text" name="ocr_baidukey" value="<?php echo $conf['ocr_baidukey']; ?>" class="form-control" placeholder=""/></div>
-	</div><br/>
-	</div>
-	<div class="form-group">
-	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
-	 </div>
-	</div>
-  </form>
-</div>
-<div class="panel-footer">
-<span class="glyphicon glyphicon-info-sign"></span>
-<br/><b>阿里云OCR文字识别：</b><a href="https://ai.aliyun.com/ocr" target="_blank" rel="noreferrer">开通地址</a>，需开通“个人证照识别”、“企业资质识别”
-<br/><b>百度云OCR文字识别：</b><a href="https://cloud.baidu.com/product/ocr.html" target="_blank" rel="noreferrer">开通地址</a>
-</div>
-</div>
-<script>
-$("select[name='cert_open']").change(function(){
-	if($(this).val() > 0){
-		$("#setform1").show();
-		if($(this).val() == 2){
-			$("#setform2").hide();
-			$("#setform3").show();
-			$("#setform4").hide();
-			$("#setform5").hide();
-			$("#setform6").hide();
-		}else if($(this).val() == 4){
-			$("#setform2").hide();
-			$("#setform3").hide();
-			$("#setform4").show();
-			$("#setform5").hide();
-			$("#setform6").hide();
-		}else if($(this).val() == 5){
-			$("#setform2").hide();
-			$("#setform3").hide();
-			$("#setform4").hide();
-			$("#setform5").show();
-			$("#setform6").hide();
-		}else if($(this).val() == 6){
-			$("#setform2").hide();
-			$("#setform3").hide();
-			$("#setform4").hide();
-			$("#setform5").hide();
-			$("#setform6").show();
-		}else{
-			$("#setform2").show();
-			$("#setform3").hide();
-			$("#setform4").hide();
-			$("#setform5").hide();
-			$("#setform6").hide();
-		}
-	}else{
-		$("#setform1").hide();
-		$("#setform2").hide();
-		$("#setform3").hide();
-		$("#setform4").hide();
-		$("#setform5").hide();
-		$("#setform6").hide();
-	}
-});
-$("select[name='cert_corpopen']").change(function(){
-	if($(this).val() == 1){
-		$("#setform6").show();
-	}else{
-		$("#setform6").hide();
-	}
-});
-$("select[name='ocr_type']").change(function(){
-	if($(this).val() == 'aliyun'){
-		$("#set_ocr_aliyun").show();
-		$("#set_ocr_baidu").hide();
-	}else if($(this).val() == 'baidu'){
-		$("#set_ocr_aliyun").hide();
-		$("#set_ocr_baidu").show();
-	}
-});
-</script>
-<?php
 }elseif($mod=='oauth'){
 	$alipay_channel = $DB->getAll("SELECT * FROM pre_channel WHERE plugin='alipay' OR plugin='alipaysl' OR plugin='alipayd'");
 	$wxpay_channel = $DB->getAll("SELECT * FROM pre_weixin WHERE type=0");
@@ -1958,8 +1763,7 @@ echo '<form action="set.php?mod=upimg" method="POST" enctype="multipart/form-dat
 echo '</div></div>';
 }
 ?>
-    </div>
-  </div>
+</div>
 <script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script>
 var items = $("select[default]");

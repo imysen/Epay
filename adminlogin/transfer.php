@@ -12,9 +12,12 @@ tbody tr>td:nth-child(5){max-width:300px;word-break: break-all;}
 .dates{max-width: 120px;}
 </style>
 <link href="../assets/css/datepicker.css" rel="stylesheet">
-  <div class="container-fluid" style="padding-top:70px;">
-    <div class="col-md-12 center-block" style="float: none;">
-<form onsubmit="return searchSubmit()" method="GET" class="form-inline" id="searchToolbar">
+<div class="ep-page-head">
+  <div><h1>付款记录</h1><div class="desc">查询转账状态、创建付款及处理待领取款项。</div></div>
+  <a href="./transfer_add.php" class="ep-btn ep-btn-primary"><?=ep_icon('plus',16)?>新增付款</a>
+</div>
+<div class="ep-card">
+<form onsubmit="return searchSubmit()" method="GET" class="form-inline ep-toolbar" id="searchToolbar">
   <div class="form-group">
     <label>搜索</label>
 	<select name="column" class="form-control"><option value="biz_no">交易号</option><option value="out_biz_no">商户交易号</option><option value="pay_order_no">接口交易号</option><option value="account">付款账号</option><option value="username">姓名</option><option value="money">付款金额</option><option value="desc">备注</option></select>
@@ -88,11 +91,8 @@ tbody tr>td:nth-child(5){max-width:300px;word-break: break-all;}
 </ul>
 </template>
 
-      <table id="listTable">
-	  </table>
-    </div>
-  </div>
-  </div>
+<div class="ep-table-wrap"><table id="listTable"></table></div>
+</div>
 <script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script src="<?php echo $cdnpublic?>jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 <script src="<?php echo $cdnpublic?>bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
@@ -111,7 +111,7 @@ $(document).ready(function(){
 		url: 'ajax_transfer.php?act=transferList',
 		pageNumber: pageNumber,
 		pageSize: pageSize,
-		classes: 'table table-striped table-hover table-bordered',
+		classes: 'table ep-table table-hover',
 		columns: [
 			{
 				field: '',

@@ -457,13 +457,6 @@ case 'editUser':
 		'email' => trim($_POST['email']),
 		'qq' => trim($_POST['qq']),
 		'phone' => trim($_POST['phone']),
-		'cert' => intval($_POST['cert']),
-		'certtype' => intval($_POST['certtype']),
-		'certmethod' => intval($_POST['certmethod']),
-		'certno' => trim($_POST['certno']),
-		'certname' => trim($_POST['certname']),
-		'certcorpno' => trim($_POST['certcorpno']),
-		'certcorpname' => trim($_POST['certcorpname']),
 		'ordername' => trim($_POST['ordername']),
 		'mode' => intval($_POST['mode']),
 		'pay' => intval($_POST['pay']),
@@ -575,15 +568,6 @@ case 'user_settle_save':
 		exit('{"code":0,"msg":"修改记录成功！"}');
 	else
 		exit('{"code":-1,"msg":"修改记录失败！'.$DB->error().'"}');
-break;
-case 'user_cert':
-	$uid=intval($_GET['uid']);
-	$rows=$DB->getRow("select cert,certtype,certmethod,certno,certname,certcorpno,certcorpname,certtime from pre_user where uid='$uid' limit 1");
-	if(!$rows)
-		exit('{"code":-1,"msg":"当前用户不存在！"}');
-	$rows['certmethodname'] = show_cert_method($rows['certmethod']);
-	$result = ['code'=>0,'msg'=>'succ','uid'=>$uid,'data'=>$rows];
-	exit(json_encode($result));
 break;
 case 'recharge':
 	$uid=intval($_POST['uid']);

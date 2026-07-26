@@ -7,9 +7,12 @@ $title='支付黑名单管理';
 include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 ?>
-  <div class="container" style="padding-top:70px;">
-    <div class="col-md-12 center-block" style="float: none;">
-<form onsubmit="return searchSubmit()" method="GET" class="form-inline" id="searchToolbar">
+<div class="ep-page-head">
+  <div><h1>支付黑名单</h1><div class="desc">管理高风险支付账号和 IP 地址，降低异常支付风险。</div></div>
+  <button type="button" class="ep-btn ep-btn-primary" onclick="addItem()"><?=ep_icon('plus',16)?>添加黑名单</button>
+</div>
+<div class="ep-card">
+<form onsubmit="return searchSubmit()" method="GET" class="form-inline ep-toolbar" id="searchToolbar">
   <div class="form-group">
 	<label>搜索</label>
     <input type="text" class="form-control" name="kw" placeholder="黑名单内容">
@@ -28,11 +31,8 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
   </div>
   <a tabindex="0" class="btn btn-default" role="button" data-toggle="popover" data-trigger="focus" title="说明" data-placement="bottom" data-content="支付账号黑名单，只支持微信公众号支付和支付宝JS支付"><span class="glyphicon glyphicon-question-sign"></span></a>
 </form>
-
-      <table id="listTable">
-	  </table>
-    </div>
-  </div>
+<div class="ep-table-wrap"><table id="listTable"></table></div>
+</div>
 <script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script src="../assets/js/bootstrap-table.min.js"></script>
 <script src="../assets/js/bootstrap-table-page-jump-to.min.js"></script>
@@ -48,7 +48,7 @@ $(document).ready(function(){
 		url: 'ajax_user.php?act=blackList',
 		pageNumber: pageNumber,
 		pageSize: pageSize,
-		classes: 'table table-striped table-hover table-bordered',
+		classes: 'table ep-table table-hover',
 		columns: [
 			{
 				field: '',

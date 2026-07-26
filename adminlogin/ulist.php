@@ -19,8 +19,11 @@ unset($rs);
 #orderItem .orderContent{word-break:break-all;}
 </style>
 <link href="../assets/css/datepicker.css" rel="stylesheet">
-  <div class="container" style="padding-top:70px;">
-    <div class="col-md-12 center-block" style="float: none;">
+<div class="ep-page-head">
+  <div><h1>商户管理</h1><div class="desc">管理收款商户、账户余额、权限和结算状态。</div></div>
+  <a href="./uset.php?my=add" class="ep-btn ep-btn-primary"><?=ep_icon('plus',16)?>添加商户</a>
+</div>
+<div class="ep-card">
 <div class="modal" id="modal-rmb">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -124,7 +127,7 @@ unset($rs);
 		</div>
 	</div>
 </div>
-<form onsubmit="return searchSubmit()" method="GET" class="form-inline" id="searchToolbar">
+<form onsubmit="return searchSubmit()" method="GET" class="form-inline ep-toolbar" id="searchToolbar">
 <input type="hidden" class="form-control" name="gid">
 <input type="hidden" class="form-control" name="upid">
 <input type="hidden" class="form-control" name="order_days">
@@ -136,7 +139,7 @@ unset($rs);
     <input type="text" class="form-control" name="value" placeholder="搜索内容">
   </div>
   <div class="form-group">
-	<select name="dstatus" class="form-control"><option value="0">全部用户</option><option value="pay_2">待审核用户</option><option value="status_1">用户状态正常</option><option value="status_0">用户状态封禁</option><option value="pay_1">支付状态正常</option><option value="pay_0">支付状态关闭</option><option value="settle_1">结算状态正常</option><option value="settle_0">结算状态关闭</option><option value="cert_1">已实名认证</option><option value="cert_0">未实名认证</option></select>
+	<select name="dstatus" class="form-control"><option value="0">全部用户</option><option value="pay_2">待审核用户</option><option value="status_1">用户状态正常</option><option value="status_0">用户状态封禁</option><option value="pay_1">支付状态正常</option><option value="pay_0">支付状态关闭</option><option value="settle_1">结算状态正常</option><option value="settle_0">结算状态关闭</option></select>
   </div>
   <div class="form-group">
 	<select name="order" class="form-control"><option value="">商户号倒序</option><option value="money_desc">余额倒序</option><option value="money_asc">余额正序</option><option value="lasttime_desc">登录时间倒序</option><option value="lasttime_asc">登录时间正序</option></select>
@@ -147,11 +150,8 @@ unset($rs);
   <a href="javascript:searchClear()" class="btn btn-default" title="刷新用户列表"><i class="fa fa-refresh"></i></a>
   <a href="javascript:$('#modal-export').modal('show')" class="btn btn-default">导出</a>
 </form>
-
-      <table id="listTable">
-	  </table>
-    </div>
-  </div>
+  <div class="ep-table-wrap"><table id="listTable"></table></div>
+</div>
 <script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script src="<?php echo $cdnpublic?>clipboard.js/1.7.1/clipboard.min.js"></script>
 <script src="<?php echo $cdnpublic?>bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
@@ -171,7 +171,7 @@ $(document).ready(function(){
 		url: 'ajax_user.php?act=userList',
 		pageNumber: pageNumber,
 		pageSize: pageSize,
-		classes: 'table table-striped table-hover table-bordered',
+		classes: 'table ep-table table-hover',
 		columns: [
 			{
 				field: 'uid',
@@ -220,12 +220,6 @@ $(document).ready(function(){
 						html += '<a href="javascript:setStatus('+row.uid+',\'user\',0)"><font color=green><i class="fa fa-check-circle"></i>正常</font></a>';
 					}else{
 						html += '<a href="javascript:setStatus('+row.uid+',\'user\',1)"><font color=red><i class="fa fa-times-circle"></i>封禁</font></a>';
-					}
-					html += '&nbsp;';
-					if(row.cert == '1'){
-						html += '<a href="javascript:showCert('+row.uid+')" title="查看实名认证信息"><font color=green><i class="fa fa-check-circle-o"></i>已实名</font></a>';
-					}else{
-						html += '<a href="javascript:showCert('+row.uid+')" title="查看实名认证信息"><font color=grey><i class="fa fa-times-circle"></i>未实名</font></a>';
 					}
 					html += '<br/>';
 					if(row.pay == '2'){
@@ -427,39 +421,6 @@ function saveInfo(uid) {
 			}
 			$('#save').val('保存');
 		} 
-	});
-}
-function showCert(uid) {
-	var ii = layer.load(2, {shade:[0.1,'#fff']});
-	$.ajax({
-		type : 'GET',
-		url : 'ajax_user.php?act=user_cert&uid='+uid,
-		dataType : 'json',
-		success : function(data) {
-			layer.close(ii);
-			if(data.code == 0){
-				var item = '<table class="table table-condensed table-hover">';
-				if(data.data.certtype==1){
-					item += '<tr><td class="info">商户号</td><td colspan="5">'+uid+'</td></tr><tr><td class="info">认证类型</td><td colspan="5">企业认证</td></tr><tr><td class="info">认证方式</td><td colspan="5">'+data.data.certmethodname+'</td><tr><tr><td class="info">公司名称</td><td colspan="5">'+data.data.certcorpname+'</td><tr><td class="info">营业执照号码</td><td colspan="5">'+data.data.certcorpno+'</td><tr><td class="info">法人姓名</td><td colspan="5">'+data.data.certname+'</td></tr><tr><td class="info">法人身份证号</td><td colspan="5">'+data.data.certno+'</td></tr><tr><td class="info">认证时间</td><td colspan="5">'+data.data.certtime+'</td></tr>';
-				}else{
-					item += '<tr><td class="info">商户号</td><td colspan="5">'+uid+'</td></tr><tr><td class="info">认证类型</td><td colspan="5">个人认证</td></tr><tr><td class="info">认证方式</td><td colspan="5">'+data.data.certmethodname+'</td><tr><tr><td class="info">真实姓名</td><td colspan="5">'+data.data.certname+'</td></tr><tr><td class="info">身份证号</td><td colspan="5">'+data.data.certno+'</td></tr><tr><td class="info">认证时间</td><td colspan="5">'+data.data.certtime+'</td></tr>';
-				}
-				item += '</table>';
-				layer.open({
-				  type: 1,
-				  shadeClose: true,
-				  title: '查看实名认证信息',
-				  skin: 'layui-layer-rim',
-				  content: item
-				});
-			}else{
-				layer.alert(data.msg);
-			}
-		},
-		error:function(data){
-			layer.msg('服务器错误');
-			return false;
-		}
 	});
 }
 function delUser(uid) {

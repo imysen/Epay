@@ -111,7 +111,11 @@ case 'getcount':
 break;
 
 case 'set':
-	unset($_POST['reg_open'], $_POST['reg_pay'], $_POST['test_open']);
+	$protectedSettingKeys = ['admin_user', 'admin_pwd', 'admin_paypwd', 'syskey', 'public_key', 'private_key', 'totp_open', 'totp_secret', 'version'];
+	if(array_intersect(array_keys($_POST), $protectedSettingKeys)){
+		exit('{"code":-1,"msg":"敏感配置不允许通过通用设置接口修改"}');
+	}
+	unset($_POST['reg_open'], $_POST['reg_pay'], $_POST['test_open'], $_POST['cert_open'], $_POST['cert_force']);
 	if(isset($_POST['localurl'])){
 		if(!empty($_POST['localurl']) && (substr($_POST['localurl'],0,4)!='http' || substr($_POST['localurl'],-1)!='/'))exit('{"code":-1,"msg":"回调专用网址格式错误"}');
 	}
@@ -123,7 +127,7 @@ case 'set':
 	}
 	if(isset($_POST['root_redirect_url'])){
 		$root_redirect_url = trim($_POST['root_redirect_url']);
-		if($root_redirect_url !== '' && substr($root_redirect_url,0,7)!='http://' && substr($root_redirect_url,0,8)!='https://')exit('{"code":-1,"msg":"根路径重定向地址必须以 http:// 或 https:// 开头"}');
+		if($root_redirect_url !== '' && (preg_match('/[\r\n]/', $root_redirect_url) || filter_var($root_redirect_url, FILTER_VALIDATE_URL) === false || !in_array(strtolower(parse_url($root_redirect_url, PHP_URL_SCHEME)), ['http','https'], true)))exit('{"code":-1,"msg":"根路径重定向地址必须是有效的 http:// 或 https:// 网址"}');
 		$_POST['root_redirect_url'] = $root_redirect_url;
 	}
 	foreach($_POST as $k=>$v){
@@ -132,6 +136,8 @@ case 'set':
 	saveSetting('reg_open', 0);
 	saveSetting('reg_pay', 0);
 	saveSetting('test_open', 0);
+	saveSetting('cert_open', 0);
+	saveSetting('cert_force', 0);
 	$ad=$CACHE->clear();
 	if($ad)exit('{"code":0,"msg":"succ"}');
 	else exit('{"code":-1,"msg":"修改设置失败['.$DB->error().']"}');

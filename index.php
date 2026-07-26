@@ -10,7 +10,7 @@ include("./includes/common.php");
 
 if(!isset($_GET['doc']) && $mod=='index'){
     $root_redirect = isset($conf['root_redirect_url']) ? trim($conf['root_redirect_url']) : '';
-    if($root_redirect !== '' && (substr($root_redirect,0,7)=='http://' || substr($root_redirect,0,8)=='https://')){
+    if($root_redirect !== '' && !preg_match('/[\r\n]/', $root_redirect) && filter_var($root_redirect, FILTER_VALIDATE_URL) !== false && in_array(strtolower(parse_url($root_redirect, PHP_URL_SCHEME)), ['http','https'], true)){
         header('Location: '.$root_redirect, true, 302);
         exit;
     }

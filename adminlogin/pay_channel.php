@@ -132,10 +132,12 @@ unset($rs);
 	</div>
 </div>
 
-  <div class="container" style="padding-top:70px;">
-  <div class="row">
-    <div class="col-md-12 center-block" style="float: none;">
-<form onsubmit="return searchSubmit()" method="GET" class="form-inline" id="searchToolbar">
+<div class="ep-page-head">
+  <div><h1>支付通道</h1><div class="desc">配置通道费率、限额、支付方式和插件接入。</div></div>
+  <button type="button" class="ep-btn ep-btn-primary" onclick="addframe()"><?=ep_icon('plus',16)?>新增通道</button>
+</div>
+<div class="ep-card">
+<form onsubmit="return searchSubmit()" method="GET" class="form-inline ep-toolbar" id="searchToolbar">
 <input type="hidden" class="form-control" name="id">
 <input type="hidden" class="form-control" name="batch">
   <div class="form-group">
@@ -155,12 +157,7 @@ unset($rs);
   <a href="javascript:searchClear()" class="btn btn-default"><i class="fa fa-refresh"></i> 重置</a>
   <a href="javascript:addframe()" class="btn btn-success"><i class="fa fa-plus"></i> 新增</a>
 </form>
-
-<table id="listTable">
-</table>
-
-    </div>
-  </div>
+<div class="ep-table-wrap"><table id="listTable"></table></div>
 </div>
 <script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script src="../assets/js/bootstrap-table.min.js"></script>
@@ -175,7 +172,7 @@ $(document).ready(function(){
 		pageNumber: 1,
 		pageSize: 15,
         sidePagination: 'client',
-		classes: 'table table-striped table-hover table-bordered',
+		classes: 'table ep-table table-hover',
 		columns: [
 			{
 				field: 'id',

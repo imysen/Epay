@@ -26,10 +26,11 @@ unset($rs);
 .type-logo{width: 18px;margin-top: -2px;padding-right: 4px;}
 </style>
 <link href="../assets/css/datepicker.css" rel="stylesheet">
-  <div class="container-fluid" style="padding-top:70px;">
-    <div class="col-md-12 center-block" style="float: none;">
-
-<form onsubmit="return searchSubmit()" method="GET" class="form-inline" id="searchToolbar">
+<div class="ep-page-head">
+  <div><h1>订单管理</h1><div class="desc">检索、处理、退款与结算收款订单。</div></div>
+</div>
+<div class="ep-card">
+  <form onsubmit="return searchSubmit()" method="GET" class="form-inline ep-toolbar" id="searchToolbar">
   <input type="hidden" name="subchannel" value="">
   <input type="hidden" name="applyid" value="">
   <div class="form-group">
@@ -72,11 +73,9 @@ unset($rs);
 	</ul>
   </div>
   <button type="button" onclick="statistics()" class="btn btn-default">&nbsp;统计&nbsp;</button>
-</form>
-      <table id="listTable">
-	  </table>
-    </div>
-  </div>
+  </form>
+  <div class="ep-table-wrap"><table id="listTable"></table></div>
+</div>
 <div class="modal" id="modal-statistics" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
 	<div class="modal-dialog">
 		<div class="modal-content animated flipInX">
@@ -128,7 +127,7 @@ $(document).ready(function(){
 		url: 'ajax_order.php?act=orderList',
 		pageNumber: pageNumber,
 		pageSize: pageSize,
-		classes: 'table table-striped table-hover table-bordered',
+		classes: 'table ep-table table-hover',
 		uniqueId: 'trade_no',
 		columns: [
 			{

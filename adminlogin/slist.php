@@ -7,11 +7,12 @@ $title='结算列表';
 include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 ?>
-  <div class="container" style="padding-top:70px;">
-	<div class="row">
-    <div class="col-md-12 center-block" style="float: none;">
-
-<form onsubmit="return searchSubmit()" method="GET" class="form-inline" id="searchToolbar">
+<div class="ep-page-head">
+  <div><h1>结算管理</h1><div class="desc">管理商户结算申请、状态和到账结果。</div></div>
+  <a href="settle.php" class="ep-btn ep-btn-primary"><?=ep_icon('wallet',16)?>批量结算</a>
+</div>
+<div class="ep-card">
+<form onsubmit="return searchSubmit()" method="GET" class="form-inline ep-toolbar" id="searchToolbar">
 <input type="hidden" class="form-control" name="batch">
   <div class="form-group">
 	<label>搜索</label>
@@ -34,12 +35,8 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
 	<ul class="dropdown-menu"><li><a href="javascript:operation(0)">待结算</a></li><li><a href="javascript:operation(1)">已完成</a></li><li><a href="javascript:operation(2)">正在结算</a></li><li><a href="javascript:operation(3)">结算失败</a></li><li><a href="javascript:operation(4)">删除记录</a></li></ul>
   </div>
 </form>
-
-	  <table id="listTable">
-	  </table>
-    </div>
-  </div>
-  </div>
+<div class="ep-table-wrap"><table id="listTable"></table></div>
+</div>
 <script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script src="<?php echo $cdnpublic?>jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 <script src="../assets/js/bootstrap-table.min.js"></script>
@@ -56,7 +53,7 @@ $(document).ready(function(){
 		url: 'ajax_settle.php?act=settleList',
 		pageNumber: pageNumber,
 		pageSize: pageSize,
-		classes: 'table table-striped table-hover table-bordered',
+		classes: 'table ep-table table-hover',
 		columns: [
 			{
 				field: '',

@@ -1,14 +1,18 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新生支付服务协议</title>
-    <style>
-        body{margin: 18px;}
-    </style>
-</head>
-<body>
+<?php
+if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'bank';
+$title = '新生支付服务协议';
+ep_pay_head($title, $channel);
+?>
+<style>
+body.ep-app{display:block!important;padding:24px 16px!important;min-height:100vh}
+.agreement{width:min(760px,100%);margin:0 auto;background:#fff;border:1px solid var(--ep-gray-200);border-radius:8px;box-shadow:var(--ep-shadow-sm);padding:32px 28px;color:var(--ep-gray-700);font-size:14px;line-height:1.85}
+.agreement h2{font-size:20px;color:var(--ep-gray-900);font-weight:600;text-align:center;margin:0 0 28px}.agreement p{margin:0 0 14px;text-align:justify}.agreement p>b{color:var(--ep-gray-800);font-weight:600}.agreement a{color:var(--ep-brand-500)}
+@media(max-width:640px){body.ep-app{padding:0!important}.agreement{border:none;border-radius:0;box-shadow:none;padding:24px 20px}}
+</style>
+<article class="agreement">
 <div style="border:none;padding:0cm 0cm 15.0pt 0cm;background:white;">
 <h2 align="center" style="text-align:center;background:white;">
 新生支付服务协议<span></span>
@@ -230,5 +234,5 @@
 <p class="MsoNormal">
 <a href="https://yunshanfu.unionpay.com/privacy/2"><span>《云闪付用户<span>隐私政策<span>》</span></span></span></a>
 </p>
-</body>
-</html>
+</article>
+<?php echo '</body></html>'; ?>

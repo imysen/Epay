@@ -1,0 +1,6 @@
+# Claude / AI 助手配置目录
+.claude/
+
+# Playwright MCP 相关目录
+.playwright-mcp/
+design/

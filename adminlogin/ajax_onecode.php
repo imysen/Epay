@@ -18,7 +18,7 @@ if($DB->exec($createSql)===false)exit(json_encode(['code'=>-1, 'msg'=>'码牌数
 
 switch($act){
 case 'list':
-    $rows=$DB->getAll("SELECT A.code,A.uid,B.username FROM pre_onecode A LEFT JOIN pre_user B ON A.uid=B.uid ORDER BY A.code ASC");
+    $rows=$DB->getAll("SELECT A.code,A.uid,A.addtime,A.bindtime,B.username FROM pre_onecode A LEFT JOIN pre_user B ON A.uid=B.uid ORDER BY A.code ASC");
     if($rows===false)exit(json_encode(['code'=>-1, 'msg'=>'码牌列表加载失败：'.$DB->error()]));
     exit(json_encode(['code'=>0, 'data'=>$rows]));
 case 'save':

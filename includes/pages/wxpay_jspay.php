@@ -1,102 +1,51 @@
 <?php
 // 微信公众号支付页面
-
 if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'wxpay';
+$title = '微信支付';
+ep_pay_head($title, $channel);
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-<title>微信支付手机版</title>
-<style>
-    body{
-        margin: 0px !important;
-    }
-</style>
-</head>
-<body style="background-color:#f6f6f6">
-<div style="display: flex;justify-content: center; padding-top: 20px;border-radius: 15px;height: 100px;text-align: center;align-items: center;">
-      <span style="font-size: 15px;font-weight:800;color:#020202;"><?php echo $order['name']?><br>
-      <div style="display: flex;justify-content: center;">
-          <strong style="font-size: 22px;color: #000000;padding-top: 6px;margin-right: 3px;">¥</strong>
-          <strong style="font-size: 40px;color: #000000;"><?php echo $order['realmoney']?></strong>
-      </div>
-  </div>
-</div>
-
-<div style="background: #fff;padding: 16px;border-top: 1px solid #d8d8d8;border-bottom: 1px solid #d8d8d8;">
-    <div style="display: flex;">
-        <span style="font-weight: 400;color: #a1a1a1;width: 40px;">商家</span>
-        <span style="flex:1;text-align: right;color: black;font-weight: 600;font-size: 14px;">微信支付平台商户</span>
+<div class="ep-pay-card" x-data="jspayWx()" x-init="init()">
+  <div class="ep-channel-bar">
+    <div class="ep-channel-name">
+      <span class="ep-channel-logo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8.7 13.3a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6m6.6 0a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6M9.1 4.2C4.5 4.9 1.3 8 1.3 11.6c0 1.9.9 3.6 2.5 4.9-.2.6-.7 1.8-.7 2 0 .2.1.3.3.3.1 0 2.2-1.2 3.2-1.8 1 .3 2 .4 3.1.4h.5c-.2-.5-.3-1-.3-1.5 0-3.4 3.2-6.1 7.3-6.1.3 0 .6 0 .9.1-.6-3.1-3.8-5.5-8-5.7M9 7.4a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8m6 0a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8"/></svg>
+      </span>
+      微信支付
     </div>
+  </div>
+  <div class="ep-amount-area" style="padding-top:32px">
+    <div class="ep-amount"><span class="symbol">¥</span><?=htmlspecialchars($order['realmoney'])?></div>
+    <div class="ep-subject"><?=htmlspecialchars($order['name'])?></div>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+    <button class="ep-btn ep-btn-primary" style="height:48px;width:100%;font-size:16px" @click="callpay()">立即支付</button>
+  </div>
+  <div class="ep-status-bar pending"><span class="ep-dot-pulse"></span><span x-text="statusText">正在等待支付结果…</span></div>
+  <div class="ep-detail" :class="detailOpen?'open':''">
+    <div class="ep-detail-toggle" @click="detailOpen=!detailOpen"><span class="label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>订单详情</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="ep-detail-body"><div class="ep-detail-grid">
+      <span class="k">收款商户</span><span class="v"><?=htmlspecialchars($sitename)?></span>
+      <span class="k">商品名称</span><span class="v"><?=htmlspecialchars($order['name'])?></span>
+      <span class="k">系统订单号</span><span class="v mono"><?=htmlspecialchars($order['trade_no'])?></span>
+    </div></div>
+  </div>
+  <div class="ep-pay-foot">支付安全由中国人民财产保险股份有限公司承保</div>
+  <div x-data="poller('/getshop.php', {type:'wxpay', trade_no:'<?=addslashes(TRADE_NO)?>'}, {interval:2000, delay:0})" @poll-ok.window="onOk()" style="display:none"></div>
 </div>
-
-<div style="margin-top: 1px;border-radius: 1px;">
-<div style="display: flex; justify-content: center; padding-top: 20px;">
-  <a class="immediate_pay" style="width:100%;max-width:600px;border-radius: 10px;margin: 0 4px;background: #05c160;padding: 12px 0px;text-align:center;color: #fff;" onclick="callpay()"><font size="4">立即支付</font></a>
-</div>
-
-<div style="position: fixed;width: 100%;text-align: center;color: #a1a1a1;bottom: 17px;font-size: 12px;">
-    支付安全由中国人民财产保险股份有限公司承保
-</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
+<script src="<?=$cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
 <script>
-	document.body.addEventListener('touchmove', function (event) {
-		event.preventDefault();
-	},{ passive: false });
-    //调用微信JS api 支付
-	function jsApiCall()
-	{
-		WeixinJSBridge.invoke(
-			'getBrandWCPayRequest',
-			<?php echo $jsApiParameters; ?>,
-			function(res){
-				if(res.err_msg == "get_brand_wcpay_request:ok" ) {
-					loadmsg();
-				}
-				//WeixinJSBridge.log(res.err_msg);
-				//alert(res.err_code+res.err_desc+res.err_msg);
-			}
-		);
-	}
-
-	function callpay()
-	{
-		if (typeof WeixinJSBridge == "undefined"){
-		    if( document.addEventListener ){
-		        document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-		    }else if (document.attachEvent){
-		        document.attachEvent('WeixinJSBridgeReady', jsApiCall); 
-		        document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
-		    }
-		}else{
-		    jsApiCall();
-		}
-	}
-    function loadmsg() {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/getshop.php",
-            data: {type: "wxpay", trade_no: "<?php echo TRADE_NO?>"},
-            success: function (data) {
-                if (data.code == 1) {
-					layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.01,time: 15000});
-                    window.location.href=<?php echo $redirect_url?>;
-                }else{
-                    setTimeout("loadmsg()", 2000);
-                }
-            },
-            error: function () {
-                setTimeout("loadmsg()", 2000);
-            }
-        });
-    }
-    window.onload = callpay();
+document.body.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+function jspayWx(){
+  return {
+    statusText:'',detailOpen:false,
+    init(){this.callpay();},
+    jsApiCall(){WeixinJSBridge.invoke('getBrandWCPayRequest',<?=$jsApiParameters?>,function(res){if(res.err_msg=='get_brand_wcpay_request:ok'){setTimeout(function(){window.dispatchEvent(new CustomEvent('poll-ok',{detail:{}}));},500);}});},
+    callpay(){if(typeof WeixinJSBridge=='undefined'){if(document.addEventListener){document.addEventListener('WeixinJSBridgeReady',this.jsApiCall,false);}else if(document.attachEvent){document.attachEvent('WeixinJSBridgeReady',this.jsApiCall);document.attachEvent('onWeixinJSBridgeReady',this.jsApiCall);}}else{this.jsApiCall();}},
+    onOk(){this.statusText='支付成功,正在跳转…';epToast('success','支付成功,正在跳转');}
+  };
+}
 </script>
-</div>
-</div>
-</body>
-</html>
+<?php echo '</body></html>'; ?>

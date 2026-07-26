@@ -1,68 +1,26 @@
 <?php
-// QQ公众号支付页面
-
+// QQ钱包JSAPI支付页面
 if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'qqpay';
+$title = 'QQ钱包支付';
+ep_pay_head($title, $channel);
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <title>支付宝支付</title>
-    <link href="/assets/pay/css/weui.css" rel="stylesheet" />
-</head>
-<body>
-    <div class="container js_container">
-        <div class="page msg">
-            <div class="weui_msg">
-                <div class="weui_icon_area"><i class="weui_icon_info weui_icon_msg"></i></div>
-                <div class="weui_text_area">
-                    <h2 class="weui_msg_title">正在跳转支付...</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
+<div class="ep-pay-card" x-data="jspayQQ()" x-init="init()">
+  <div class="ep-channel-bar"><div class="ep-channel-name"><span class="ep-channel-logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></span>QQ钱包支付</div></div>
+  <div class="ep-amount-area" style="padding-top:40px"><div class="ep-amount"><span class="symbol">¥</span><?=htmlspecialchars($order['realmoney'])?></div><div class="ep-subject"><?=htmlspecialchars($order['name'])?></div></div>
+  <div class="ep-status-bar pending"><span class="ep-dot-pulse"></span><span x-text="statusText">正在跳转支付…</span></div>
+  <div class="ep-detail" :class="detailOpen?'open':''">
+    <div class="ep-detail-toggle" @click="detailOpen=!detailOpen"><span class="label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>订单详情</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="ep-detail-body"><div class="ep-detail-grid"><span class="k">商品名称</span><span class="v"><?=htmlspecialchars($order['name'])?></span><span class="k">系统订单号</span><span class="v mono"><?=htmlspecialchars($order['trade_no'])?></span></div></div>
+  </div>
+  <div class="ep-pay-foot">支付安全由中国人民财产保险股份有限公司承保</div>
+  <div x-data="poller('/getshop.php', {type:'qqpay', trade_no:'<?=addslashes($order['trade_no'])?>'}, {interval:2000, delay:0})" @poll-ok.window="onOk()" style="display:none"></div>
+</div>
 <script src="//open.mobile.qq.com/sdk/qqapi.js?_bid=152"></script>
 <script>
-	document.body.addEventListener('touchmove', function (event) {
-		event.preventDefault();
-	},{ passive: false });
-
-	function callpay()
-	{
-		mqq.tenpay.pay({
-			tokenId: '<?php echo $tokenId; ?>',
-			appInfo: "<?php echo $appInfo; ?>"
-		}, function(result, resultCode){
-			if(result.resultCode == 0){ //支付成功
-				loadmsg();
-			}
-		});
-	}
-    function loadmsg() {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/getshop.php",
-            data: {type: "qqpay", trade_no: "<?php echo $order['trade_no']?>"},
-            success: function (data) {
-                if (data.code == 1) {
-					layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.1,time: 15000});
-					setTimeout(window.location.href=data.backurl, 1000);
-                }else{
-                    setTimeout("loadmsg()", 2000);
-                }
-            },
-            error: function () {
-                setTimeout("loadmsg()", 2000);
-            }
-        });
-    }
-    window.onload = callpay();
+document.body.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+function jspayQQ(){return {statusText:'正在跳转支付…',detailOpen:false,init(){mqq.tenpay.pay({tokenId:'<?=addslashes($tokenId)?>',appInfo:'<?=addslashes($appInfo)?>'},function(result){if(result.resultCode==0){window.dispatchEvent(new CustomEvent('poll-ok',{detail:{}}));}});},onOk(){this.statusText='支付成功,正在跳转…';epToast('success','支付成功,正在跳转');}};}
 </script>
-</div>
-</div>
-</body>
-</html>
+<?php echo '</body></html>'; ?>

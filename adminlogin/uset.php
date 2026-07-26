@@ -167,32 +167,6 @@ $group=\lib\Channel::getGroup($row['gid']);
 </div>
 </div>
 <div class="col-sm-12 col-md-6">
-<h4><font color="blue">实名信息</font></h4>
-<div class="form-group">
-<label>是否实名认证:</label><br><select class="form-control" name="cert" default="<?php echo $row['cert']?>"><option value="0">0_未实名</option><option value="1">1_已实名</option></select>
-</div>
-<div class="form-group">
-<label>认证类型:</label><br><select class="form-control" name="certtype" default="<?php echo $row['certtype']?>"><option value="0">个人实名认证</option><option value="1">企业实名认证</option></select>
-</div>
-<div class="form-group">
-<label>认证方式:</label><br><select class="form-control" name="certmethod" default="<?php echo $row['certmethod']?>"><option value="0">支付宝快捷认证</option><option value="1">微信快捷认证</option><option value="2">手机号三要素认证</option><option value="3">人工审核认证</option></select>
-</div>
-<div class="form-group">
-<label>真实姓名:</label><br>
-<input type="text" class="form-control" name="certname" value="<?php echo $row['certname']?>">
-</div>
-<div class="form-group">
-<label>身份证号:</label><br>
-<input type="text" class="form-control" name="certno" value="<?php echo $row['certno']?>" maxlength="18">
-</div>
-<div class="form-group">
-<label>公司名称:</label><br>
-<input type="text" class="form-control" name="certcorpname" value="<?php echo $row['certcorpname']?>">
-</div>
-<div class="form-group">
-<label>营业执照号码:</label><br>
-<input type="text" class="form-control" name="certcorpno" value="<?php echo $row['certcorpno']?>" maxlength="30">
-</div>
 <h4><font color="blue">功能开关</font></h4>
 <div class="form-group">
 <label>手续费扣除模式:</label><br><select class="form-control" name="mode" default="<?php echo $row['mode']?>"><option value="0">余额扣费</option><option value="1">订单加费</option></select>

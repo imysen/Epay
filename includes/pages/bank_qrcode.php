@@ -1,149 +1,84 @@
 <?php
 // 银联云闪付扫码支付页面
-
 if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'bank';
+$title = '银联云闪付扫码支付';
+ep_pay_head($title, $channel);
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta http-equiv="Content-Language" content="zh-cn">
-<meta name="renderer" content="webkit">
-<title>银联云闪付扫码支付</title>
-<link href="/assets/css/bank_pay.css?v=3" rel="stylesheet" media="screen">
-</head>
-<body>
-<div class="body">
-<h1 class="mod-title">
-<span class="ico-wechat"></span><span class="text">银联云闪付扫码支付</span>
-</h1>
-<div class="mod-ct">
-<div class="order">
+<div class="ep-pay-card" x-data="bankQR()" x-init="init()">
+  <div class="ep-channel-bar">
+    <div class="ep-channel-name">
+      <span class="ep-channel-logo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18" stroke="#fff" stroke-width="2"/></svg>
+      </span>
+      银联云闪付扫码支付
+    </div>
+    <div class="ep-countdown">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span x-text="countdown"></span>
+    </div>
+  </div>
+  <div class="ep-amount-area">
+    <div class="ep-amount"><span class="symbol">¥</span><?=htmlspecialchars($order['realmoney'])?></div>
+    <div class="ep-subject"><?=htmlspecialchars($order['name'])?></div>
+  </div>
+  <div class="ep-qr-area">
+    <div class="ep-qr-box" id="qrcode"></div>
+    <div class="ep-scan-hint">
+      <svg class="ch-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+      请使用银联云闪付扫一扫
+    </div>
+  </div>
+  <template x-if="isMobile && !isDataImage">
+    <div style="padding:0 20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px">
+      <a class="ep-btn ep-btn-primary" style="height:40px;width:100%" :href="isWechat?'javascript:void(0)':urlScheme" @click="isWechat?wxOpen():null">打开云闪付APP继续付款</a>
+      <button class="ep-btn ep-btn-ghost ep-btn-sm" @click="checkResult()">我已付款，返回查看订单</button>
+    </div>
+  </template>
+  <div class="ep-status-bar pending"><span class="ep-dot-pulse"></span><span x-text="statusText">正在等待付款结果…</span></div>
+  <div class="ep-detail" :class="detailOpen?'open':''">
+    <div class="ep-detail-toggle" @click="detailOpen=!detailOpen">
+      <span class="label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>订单详情</span>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="ep-detail-body">
+      <div class="ep-detail-grid">
+        <span class="k">商品名称</span><span class="v"><?=htmlspecialchars($order['name'])?></span>
+        <span class="k">系统订单号</span><span class="v mono"><?=htmlspecialchars($order['trade_no'])?></span>
+        <span class="k">创建时间</span><span class="v"><?=htmlspecialchars($order['addtime'])?></span>
+      </div>
+    </div>
+  </div>
+  <div class="ep-pay-foot">支付完成后页面将自动跳转</div>
+  <div x-data="poller('/getshop.php', {type:'bank', trade_no:'<?=addslashes($order['trade_no'])?>'}, {interval:2000, delay:2000})" @poll-ok.window="onOk()" style="display:none"></div>
 </div>
-<div class="amount">¥<?php echo $order['realmoney']?></div>
-<div class="qr-image" id="qrcode">
-</div>
-<div class="open_app" style="display: none;">
-    <a class="btn-open-app">打开云闪付APP继续付款</a><br/><br/><br/>
-	<a onclick="checkresult()" class="btn-check">我已付款，返回查看订单</a>
-</div>
-<div class="detail" id="orderDetail">
-<dl class="detail-ct" style="display: none;">
-<dt>购买物品</dt>
-<dd id="productName"><?php echo $order['name']?></dd>
-<dt>商户订单号</dt>
-<dd id="billId"><?php echo $order['trade_no']?></dd>
-<dt>创建时间</dt>
-<dd id="createTime"><?php echo $order['addtime']?></dd>
-</dl>
-<a href="javascript:void(0)" class="arrow"><i class="ico-arrow"></i></a>
-</div>
-<div class="tip">
-<span class="dec dec-left"></span>
-<span class="dec dec-right"></span>
-<div class="ico-scan"></div>
-<div class="tip-text">
-<p>请使用银联云闪付扫一扫</p>
-<p>扫描二维码完成支付</p>
-</div>
-</div>
-<div class="tip-text">
-</div>
-</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
-<script src="<?php echo $cdnpublic?>jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+<script src="<?=$cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
+<script src="<?=$cdnpublic?>jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 <script>
-	var code_url = '<?php echo $code_url?>';
-    var code_type = code_url.indexOf('data:image/')>-1?1:0;
-    if(code_type == 0){
-        var url_scheme = 'upwallet://html/' + code_url.replace('https://', '').replace('http://', '');
-        $('#qrcode').qrcode({
-            text: code_url,
-            width: 230,
-            height: 230,
-            foreground: "#000000",
-            background: "#ffffff",
-            typeNumber: -1
-        });
-    }else{
-        $('#qrcode').html('<img src="'+code_url+'"/>');
-    }
-    // 订单详情
-    $('#orderDetail .arrow').click(function (event) {
-        if ($('#orderDetail').hasClass('detail-open')) {
-            $('#orderDetail .detail-ct').slideUp(500, function () {
-                $('#orderDetail').removeClass('detail-open');
-            });
-        } else {
-            $('#orderDetail .detail-ct').slideDown(500, function () {
-                $('#orderDetail').addClass('detail-open');
-            });
-        }
-    });
-    function loadmsg() {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/getshop.php",
-            data: {type: "bank", trade_no: "<?php echo $order['trade_no']?>"},
-            success: function (data) {
-                if (data.code == 1) {
-					layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.1,time: 15000});
-					setTimeout(window.location.href=data.backurl, 1000);
-                }else{
-                    setTimeout("loadmsg()", 2000);
-                }
-            },
-            error: function () {
-                setTimeout("loadmsg()", 2000);
-            }
-        });
-    }
-	function checkresult() {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/getshop.php",
-            data: {type: "bank", trade_no: "<?php echo $order['trade_no']?>"},
-            success: function (data) {
-                if (data.code == 1) {
-                    layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.1,time: 15000});
-					setTimeout(window.location.href=data.backurl, 1000);
-                }else{
-					layer.msg('您还未完成付款，请继续付款', {shade: 0,time: 1500});
-				}
-            },
-            error: function () {
-                layer.msg('服务器错误');
-            }
-        });
-    }
-	var isMobile = function (){
-		var ua = navigator.userAgent;
-		var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
-		isIphone =!ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
-		isAndroid = ua.match(/(Android)\s+([\d.]+)/);
-		return isIphone || isAndroid;
-	}
-    function wx_open(){
-        layer.alert('请点击屏幕右上角，<b>在浏览器打开</b>即可跳转支付。<br/><font color="red">支付成功后，回到微信查看结果</font>', {title:'支付提示'});
-    }
-	window.onload = function(){
-		if(isMobile() && code_type==0){
-			$('.open_app').show();
-            if(navigator.userAgent.indexOf('MicroMessenger/')>0){
-                $('.btn-open-app').attr('onclick', 'wx_open()');
-            }else{
-                $('.btn-open-app').attr('href', url_scheme);
-                if(navigator.userAgent.indexOf('EdgA/')==-1 && $(window).height() > $(window).width()){
-                    window.location.href = url_scheme;
-                }
-            }
-		}
-		setTimeout("loadmsg()", 2000);
-	}
+function bankQR(){
+  var code_url=<?=json_encode($code_url)?>;
+  var isDataImage=code_url.indexOf('data:image/')>-1;
+  var urlScheme=isDataImage?'':'upwallet://html/'+code_url.replace('https://','').replace('http://','');
+  return {
+    statusText:'正在等待付款结果…',detailOpen:false,countdown:'15:00',secs:900,
+    isMobile:/Android|iPhone|iPad|iPod|SymbianOS|Windows Phone/i.test(navigator.userAgent),
+    isWechat:navigator.userAgent.indexOf('MicroMessenger/')>0,
+    isDataImage:isDataImage,urlScheme:urlScheme,
+    init(){
+      this.renderQR();this.startCountdown();
+      if(this.isMobile&&!isDataImage&&!this.isWechat&&navigator.userAgent.indexOf('EdgA/')==-1&&window.innerHeight>window.innerWidth){window.location.href=urlScheme;}
+    },
+    renderQR(){
+      if(isDataImage){$('#qrcode').html('<img src="'+code_url+'" width="200" height="200"/>');return;}
+      $('#qrcode').qrcode({text:code_url,width:200,height:200,foreground:'#000000',background:'#ffffff',typeNumber:-1});
+    },
+    startCountdown(){var t=()=>{this.secs--;if(this.secs<0){this.countdown='已超时';return;}var m=String(Math.floor(this.secs/60)).padStart(2,'0');var s=String(this.secs%60).padStart(2,'0');this.countdown=m+':'+s;};t();setInterval(t,1000);},
+    wxOpen(){epToast('info','请点击屏幕右上角,在浏览器打开即可跳转支付');},
+    async checkResult(){try{var d=await this.$fetch('/getshop.php',{method:'GET',body:{type:'bank',trade_no:'<?=addslashes($order['trade_no'])?>'}});if(d.code===1){epToast('success','支付成功,正在跳转');setTimeout(function(){window.location.href=d.backurl;},300);}else{epToast('info','您还未完成付款,请继续付款');}}catch(e){epToast('error','服务器错误');}},
+    onOk(){this.statusText='支付成功,正在跳转…';epToast('success','支付成功,正在跳转');}
+  };
+}
 </script>
-</body>
-</html>
+<?php echo '</body></html>'; ?>

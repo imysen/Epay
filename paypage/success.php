@@ -9,60 +9,42 @@ if($row['status']!=1)showerror('订单未完成支付');
 if(!isset($_SESSION['paypage_trade_no']) || $_SESSION['paypage_trade_no']!=$trade_no)showerror('订单校验失败');
 $userrow=$DB->getRow("select codename,username from pre_user where uid='{$row['uid']}' limit 1");
 $codename = !empty($userrow['codename'])?$userrow['codename']:$userrow['username'];
+
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'wxpay';
+$title = '支付成功';
+ep_pay_head($title, $channel);
 ?>
-<html class="weui-msg">
-<head>
-    <meta charset="UTF-8">
-    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>支付成功页面</title>
-    <link href="/assets/css/weui.min.css" rel="stylesheet">
-    <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
-</head>
-<body>
-<div class="container">
-<div class="page">
-<div class="weui-msg">
-    <div class="weui-msg__icon-area">
-        <i class="weui-icon-success weui-icon_msg"></i>
+
+<div class="ep-pay-card" style="width:min(420px,100%);text-align:center;padding:40px 24px 32px">
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--ep-success-50);color:var(--ep-success-500);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px">
+    <?=ep_icon('check',32)?>
+  </div>
+  <div style="font-size:16px;font-weight:600;color:var(--ep-gray-900);margin-bottom:8px">支付成功</div>
+  <div style="font-size:32px;font-weight:600;color:var(--ep-gray-900);margin-bottom:8px">¥<?=number_format($row['money'],2)?></div>
+
+  <div class="ep-card" style="text-align:left;margin-top:24px;margin-bottom:24px">
+    <div class="ep-detail-grid" style="margin:0">
+      <span class="k">收款方</span><span class="v"><?=htmlspecialchars($codename)?></span>
+      <span class="k">完成时间</span><span class="v"><?=$row['endtime']?></span>
+      <span class="k">订单号</span><span class="v mono"><?=$trade_no?></span>
     </div>
-    <div class="weui-msg__text-area">
-        <h2 class="weui-msg__title">支付成功</h2>
-		<h2 class="weui-msg__title"><span style="font-size:38px;font-weight:700;color:#f40;">¥<?php echo $row['money']?></span></h2>
-		<div class="weui-msg__custom-area">
-			<div class="weui-cells">
-			  <div class="weui-cell weui-cell_example">
-				<span class="weui-cell__bd">收款方</span>
-				<span class="weui-cell__ft"><strong><?php echo $codename?></strong></span>
-			  </div>
-			  <div class="weui-cell weui-cell_example">
-				<span class="weui-cell__bd">完成时间</span>
-				<span class="weui-cell__ft"><?php echo $row['endtime']?></span>
-			  </div>
-			  <div class="weui-cell weui-cell_example">
-				<span class="weui-cell__bd">订单号</span>
-				<span class="weui-cell__ft"><?php echo $trade_no?></span>
-			  </div>
-			</div>
-		</div>
-    </div>
-    <div class="weui-msg__opr-area">
-        <p class="weui-btn-area">
-            <a href="javascript:;" class="weui-btn weui-btn_default" id="Close">关闭</a>
-        </p>
-    </div>
-    <div class="weui-msg__extra-area">
-        <div class="weui-footer"><p class="weui-footer__links"></p><p class="weui-footer__text">Copyright © <?php echo date("Y")?> <?php echo $conf['sitename']?></p></div>
-    </div>
+  </div>
+
+  <button class="ep-btn ep-btn-secondary" id="Close" style="width:100%;height:44px">关闭</button>
+  <div style="font-size:12px;color:var(--ep-gray-400);margin-top:20px">Copyright © <?=date("Y")?> <?=htmlspecialchars($conf['sitename'])?></div>
 </div>
-</div>
-</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="//open.mobile.qq.com/sdk/qqapi.js?_bid=152"></script>
-<script src="js/close.js"></script>
+
 <script>
-document.body.addEventListener('touchmove', function (event) {
-	event.preventDefault();
-},{ passive: false });
+function closeWin(){
+  var ua=navigator.userAgent;
+  if(ua.indexOf('AlipayClient')>-1 && window.AlipayJSBridge){AlipayJSBridge.call('popWindow');}
+  else if(ua.indexOf('MicroMessenger')>-1 && typeof WeixinJSBridge!=='undefined'){WeixinJSBridge.call('closeWindow');}
+  else{window.opener=null;window.close();if(window.location.href.indexOf('close=1')===-1)window.location.href=window.location.href+'&close=1';}
+}
+document.getElementById('Close').addEventListener('click',closeWin);
+document.body.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
 </script>
-</body>
-</html>
+
+<?php echo '</body></html>'; ?>

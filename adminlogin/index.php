@@ -1,176 +1,154 @@
 <?php
+define('IN_EPAY', true);
 include("../includes/common.php");
+include("../includes/ep_ui.php");
 $title='支付管理中心';
-include './head.php';
-if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
-?>
-<?php
+$activeNav='index';
+$crumbs=['首页','平台首页'];
+ep_layout_head(true);
+
+$messages=[];
 if($conf['admin_pwd']==='123456'){
-	$msg[]='<li class="list-group-item list-group-item-danger"><span class="btn-sm btn-danger"><i class="fa fa-info-circle"></i> 提示</span>&nbsp;请及时修改网站默认管理员密码！</li>';
+  $messages[]='请及时修改网站默认管理员密码。';
 }elseif(strlen($conf['admin_pwd'])<6 || is_numeric($conf['admin_pwd']) && strlen($conf['admin_pwd'])<=10 || $conf['admin_pwd']===$conf['kfqq'] || $conf['admin_user']===$conf['admin_pwd']){
-	$msg[]='<li class="list-group-item list-group-item-danger"><span class="btn-sm btn-danger"><i class="fa fa-info-circle"></i> 提示</span>&nbsp;网站管理员密码过于简单，请及时修改密码！</li>';
+  $messages[]='网站管理员密码过于简单，请及时修改密码。';
 }
 ?>
-<div class="container" style="padding-top:70px;">
-<div class="col-xs-12 col-lg-9 center-block" style="float: none;">
-<div id="browser-notice"></div>
-
-<div class="row">
-    <div class="col-xs-12 col-lg-8">
-      <div class="panel panel-info">
-        <div class="panel-heading"><h3 class="panel-title" id="title">后台管理首页</h3></div>
-          <ul class="list-group">
-			<?php if($msg){foreach($msg as $x){echo $x;}}?>
-            <li class="list-group-item"><span class="glyphicon glyphicon-stats"></span> <b>订单总数：</b><a id="count1" href="./order.php"></a></li>
-			<li class="list-group-item"><span class="glyphicon glyphicon-tint"></span> <b>商户数量：</b><a id="count2" href="./ulist.php"></a></li>
-			<li class="list-group-item"><span class="glyphicon glyphicon-tint"></span> <b>总计余额：</b><span id="usermoney"></span> 元（1小时更新一次）</li>
-			<li class="list-group-item"><span class="glyphicon glyphicon-tint"></span> <b>结算总额：</b><span id="settlemoney"></span> 元（1小时更新一次）</li>
-			<li class="list-group-item"><span class="glyphicon glyphicon-stats"></span> <b>今日订单成功率：</b><span id="success_rate"></span> %</li>
-            <li class="list-group-item"><span class="glyphicon glyphicon-time"></span> <b>现在时间：</b> <?=$date?></li>
-			</li>
-          </ul>
-      </div>
-	</div>
-	<div class="col-xs-12 col-lg-4">
-      <div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title" id="title">管理员信息</h3></div>
-          <ul class="list-group text-center">
-            <li class="list-group-item">
-			<img src="<?php echo ($conf['kfqq'])?'//q2.qlogo.cn/headimg_dl?bs=qq&dst_uin='.$conf['kfqq'].'&src_uin='.$conf['kfqq'].'&fid='.$conf['kfqq'].'&spec=100&url_enc=0&referer=bu_interface&term_type=PC':'../assets/img/user.png'?>" alt="avatar" class="img-circle img-thumbnail"></br>
-			<span class="text-muted"><strong>用户名：</strong><font color="blue"><?php echo $conf['admin_user']?></font></span><br/><span class="text-muted"><strong>用户权限：</strong><font color="orange">管理员</font></span></li>
-			<li class="list-group-item"><a href="../" class="btn btn-xs btn-default">返回首页</a>&nbsp;<a href="./set.php?mod=account" class="btn btn-xs btn-info">修改密码</a>&nbsp;<a href="./login.php?logout" class="btn btn-xs btn-danger">退出登录</a>
-			</li>
-          </ul>
-      </div>
-	</div>
+<div class="ep-page-head">
+  <div>
+    <h1 id="dashboard-title">后台管理首页</h1>
+    <div class="desc">查看收款、商户与结算的实时汇总数据。</div>
+  </div>
+  <button class="ep-btn ep-btn-secondary" id="refresh-dashboard"><?=ep_icon('refresh',16)?>刷新数据</button>
 </div>
-	  <div class="panel panel-success">
-	    <div class="panel-heading"><h3 class="panel-title">支付方式收入统计（1小时更新一次）<span class="pull-right"><a href="javascript:getData(true)" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i></a></span></h3></div>
-          <table class="table table-bordered table-striped">
-		    <thead><tr id="paytype_head"><th>日期</th></thead>
-            <tbody id="paytype_list">
-			</tbody>
-          </table>
-      </div>
-	  <div class="panel panel-warning">
-	    <div class="panel-heading"><h3 class="panel-title">支付通道收入统计（1小时更新一次）<span class="pull-right"><a href="javascript:getData(true)" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i></a></span></h3></div>
-		<div class="table-responsive">
-          <table class="table table-bordered table-striped">
-		    <thead><tr id="channel_head"><th>日期</th></thead>
-            <tbody id="channel_list">
-			</tbody>
-          </table>
-		</div>
-      </div>
-	  <div class="panel panel-warning">
-	    <div class="panel-heading" style="background-color: #c09853;"><h3 class="panel-title">支付方式手续费利润（已扣除通道成本，1小时更新一次）<span class="pull-right"><a href="javascript:getData(true)" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i></a></span></h3></div>
-          <table class="table table-bordered table-striped">
-		    <thead><tr id="profit_paytype_head"><th>日期</th></thead>
-            <tbody id="profit_paytype_list">
-			</tbody>
-          </table>
-      </div>
+
+<?php foreach($messages as $message): ?>
+<div class="ep-card" style="border-color:var(--ep-danger-500);background:var(--ep-danger-50);padding:14px 16px;color:var(--ep-danger-600);display:flex;align-items:center;gap:8px">
+  <?=ep_icon('alert',18)?><?=htmlspecialchars($message)?>
+</div>
+<?php endforeach; ?>
+
+<div class="ep-stat-grid">
+  <a class="ep-stat" href="./order.php">
+    <span class="icon" style="background:var(--ep-brand-50);color:var(--ep-brand-500)"><?=ep_icon('list',18)?></span>
+    <div class="label">订单总数</div>
+    <div class="value" id="count1">—</div>
+  </a>
+  <a class="ep-stat" href="./ulist.php">
+    <span class="icon" style="background:var(--ep-info-50);color:var(--ep-info-500)"><?=ep_icon('users',18)?></span>
+    <div class="label">商户数量</div>
+    <div class="value" id="count2">—</div>
+  </a>
+  <div class="ep-stat">
+    <span class="icon" style="background:var(--ep-success-50);color:var(--ep-success-500)"><?=ep_icon('wallet',18)?></span>
+    <div class="label">总计余额</div>
+    <div class="value">¥<span id="usermoney">—</span></div>
+  </div>
+  <div class="ep-stat">
+    <span class="icon" style="background:var(--ep-warning-50);color:var(--ep-warning-500)"><?=ep_icon('credit-card',18)?></span>
+    <div class="label">结算总额</div>
+    <div class="value">¥<span id="settlemoney">—</span></div>
+  </div>
+  <div class="ep-stat">
+    <span class="icon" style="background:var(--ep-success-50);color:var(--ep-success-500)"><?=ep_icon('trending-up',18)?></span>
+    <div class="label">今日订单成功率</div>
+    <div class="value"><span id="success_rate">—</span>%</div>
+  </div>
+  <div class="ep-stat">
+    <span class="icon" style="background:var(--ep-gray-100);color:var(--ep-gray-600)"><?=ep_icon('clock',18)?></span>
+    <div class="label">当前时间</div>
+    <div class="value" style="font-size:16px;margin-top:11px"><?=htmlspecialchars($date)?></div>
+  </div>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-head">
+    <h2>管理员信息</h2>
+    <a class="ep-btn ep-btn-secondary ep-btn-sm" href="./set.php?mod=account"><?=ep_icon('settings',14)?>账户设置</a>
+  </div>
+  <div class="ep-card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div class="ep-avatar" style="width:48px;height:48px;font-size:18px"><?php $adminInitial=(string)$conf['admin_user']; echo htmlspecialchars(function_exists('mb_substr')?mb_substr($adminInitial,0,1,'UTF-8'):substr($adminInitial,0,1), ENT_QUOTES, 'UTF-8'); ?></div>
+    <div style="flex:1;min-width:160px">
+      <div style="font-weight:600;color:var(--ep-gray-800)"><?=htmlspecialchars($conf['admin_user'])?></div>
+      <div style="font-size:13px;color:var(--ep-gray-500);margin-top:3px">管理员</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="ep-btn ep-btn-secondary" href="../" target="_blank"><?=ep_icon('external-link',14)?>访问首页</a>
+      <a class="ep-btn ep-btn-danger" href="./login.php?logout"><?=ep_icon('log-out',14)?>退出登录</a>
     </div>
   </div>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-head">
+    <h2>支付方式收入统计</h2>
+    <span style="font-size:12px;color:var(--ep-gray-400)">每小时更新</span>
+  </div>
+  <div class="ep-table-wrap"><table class="ep-table"><thead><tr id="paytype_head"><th>日期</th></tr></thead><tbody id="paytype_list"></tbody></table></div>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-head">
+    <h2>支付通道收入统计</h2>
+    <span style="font-size:12px;color:var(--ep-gray-400)">每小时更新</span>
+  </div>
+  <div class="ep-table-wrap"><table class="ep-table"><thead><tr id="channel_head"><th>日期</th></tr></thead><tbody id="channel_list"></tbody></table></div>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-head">
+    <h2>支付方式手续费利润</h2>
+    <span style="font-size:12px;color:var(--ep-gray-400)">已扣除通道成本，每小时更新</span>
+  </div>
+  <div class="ep-table-wrap"><table class="ep-table"><thead><tr id="profit_paytype_head"><th>日期</th></tr></thead><tbody id="profit_paytype_list"></tbody></table></div>
+</div>
+
 <script>
-$(document).ready(function(){
-	getData();
-});
-function getData(getnew){
-	getnew = getnew || false;
-	$('#title').html('正在加载数据中...');
-	$.ajax({
-		type : "GET",
-		url : "ajax.php?act=getcount"+(getnew?'&getnew=1':''),
-		dataType : 'json',
-		async: true,
-		success : function(data) {
-			$('#title').html('后台管理首页');
-			$('#count1').html(data.count1);
-			$('#count2').html(data.count2);
-			$('#usermoney').html(data.usermoney);
-			$('#settlemoney').html(data.settlemoney);
-			$('#success_rate').html(data.success_rate);
+(function(){
+  function cell(value){return $('<td>').text(value == null ? '0' : value);}
+  function renderTable(headId,listId,labels,rows,today,field,totalField){
+    const $head=$(headId).empty().append($('<th>').text('日期'));
+    const $list=$(listId).empty();
+    const keys=[];
+    $.each(labels,function(key,label){keys.push(key);$head.append($('<th>').text(label));});
+    $head.append($('<th>').text('总计'));
+    function appendRow(name,row){
+      const $tr=$('<tr>').append($('<td>').text(name));
+      $.each(keys,function(_,key){$tr.append(cell(row && row[field] ? row[field][key] : 0));});
+      $tr.append(cell(row ? row[totalField] : 0));
+      $list.append($tr);
+    }
+    appendRow('今日',today);
+    $.each(rows,function(date,row){appendRow(date,row);});
+  }
 
-			$("#paytype_head").html('<th>日期</th>');
-			$("#paytype_list").empty();
-			var paytype=new Array();
-			$.each(data.paytype, function(k, v){
-				paytype.push(k);
-				$("#paytype_head").append('<th>'+v+'</th>');
-			});
-			$("#paytype_head").append('<th>总计</th>');
-			var order = '';
-			$.each(paytype, function(k, v){
-				if(typeof data.order_today.paytype[v] != "undefined")order+='<td>'+data.order_today.paytype[v]+'</td>';
-				else order+='<td>0</td>';
-			});
-			$("#paytype_list").append('<tr><td>今日</td>'+order+'<td>'+data.order_today.all+'</td></tr>');
-			$.each(data.order, function(k, v){
-				var order = '';
-				$.each(paytype, function(key, value){
-					if(typeof v.paytype[value] != "undefined")order+='<td>'+v.paytype[value]+'</td>';
-					else order+='<td>0</td>';
-				});
-				$("#paytype_list").append('<tr><td>'+k+'</td>'+order+'<td>'+v.all+'</td></tr>');
-			});
-
-			$("#channel_head").html('<th>日期</th>');
-			$("#channel_list").empty();
-			var channel=new Array();
-			$.each(data.channel, function(k, v){
-				channel.push(k);
-				$("#channel_head").append('<th>'+v+'</th>');
-			});
-			$("#channel_head").append('<th>总计</th>');
-			var order = '';
-			$.each(channel, function(k, v){
-				if(typeof data.order_today.channel[v] != "undefined")order+='<td>'+data.order_today.channel[v]+'</td>';
-				else order+='<td>0</td>';
-			});
-			$("#channel_list").append('<tr><td>今日</td>'+order+'<td>'+data.order_today.all+'</td></tr>');
-			$.each(data.order, function(k, v){
-				var order = '';
-				$.each(channel, function(key, value){
-					if(typeof v.channel[value] != "undefined")order+='<td>'+v.channel[value]+'</td>';
-					else order+='<td>0</td>';
-				});
-				$("#channel_list").append('<tr><td>'+k+'</td>'+order+'<td>'+v.all+'</td></tr>');
-			});
-
-			$("#profit_paytype_head").html('<th>日期</th>');
-			$("#profit_paytype_list").empty();
-			var paytype=new Array();
-			$.each(data.paytype, function(k, v){
-				paytype.push(k);
-				$("#profit_paytype_head").append('<th>'+v+'</th>');
-			});
-			$("#profit_paytype_head").append('<th>总计</th>');
-			var order = '';
-			$.each(paytype, function(k, v){
-				if(typeof data.order_today.profit_paytype[v] != "undefined")order+='<td>'+data.order_today.profit_paytype[v]+'</td>';
-				else order+='<td>0</td>';
-			});
-			$("#profit_paytype_list").append('<tr><td>今日</td>'+order+'<td>'+data.order_today.profit_all+'</td></tr>');
-			$.each(data.order, function(k, v){
-				var order = '';
-				$.each(paytype, function(key, value){
-					if(typeof v.profit_paytype[value] != "undefined")order+='<td>'+v.profit_paytype[value]+'</td>';
-					else order+='<td>0</td>';
-				});
-				$("#profit_paytype_list").append('<tr><td>'+k+'</td>'+order+'<td>'+v.profit_all+'</td></tr>');
-			});
-		}
-	});
-}
+  function getData(force){
+    const $title=$('#dashboard-title').text('正在加载数据…');
+    $('#refresh-dashboard').prop('disabled',true);
+    $.ajax({
+      type:'GET',
+      url:'ajax.php?act=getcount'+(force?'&getnew=1':''),
+      dataType:'json',
+      success:function(data){
+        $title.text('后台管理首页');
+        $('#count1').text(data.count1);
+        $('#count2').text(data.count2);
+        $('#usermoney').text(data.usermoney);
+        $('#settlemoney').text(data.settlemoney);
+        $('#success_rate').text(data.success_rate);
+        renderTable('#paytype_head','#paytype_list',data.paytype,data.order,data.order_today,'paytype','all');
+        renderTable('#channel_head','#channel_list',data.channel,data.order,data.order_today,'channel','all');
+        renderTable('#profit_paytype_head','#profit_paytype_list',data.paytype,data.order,data.order_today,'profit_paytype','profit_all');
+      },
+      error:function(){
+        $title.text('后台管理首页');
+        if(window.epToast) epToast('error','数据加载失败，请稍后重试');
+      },
+      complete:function(){$('#refresh-dashboard').prop('disabled',false);}
+    });
+  }
+  $('#refresh-dashboard').on('click',function(){getData(true);});
+  getData(false);
+})();
 </script>
-<script>
-function speedModeNotice(){
-	var ua = window.navigator.userAgent;
-	if(ua.indexOf('Windows NT')>-1 && ua.indexOf('Trident/')>-1){
-		var html = "<div class=\"panel panel-default\"><div class=\"panel-body\">当前浏览器是兼容模式，为确保后台功能正常使用，请切换到<b style='color:#51b72f'>极速模式</b>！<br>操作方法：点击浏览器地址栏右侧的IE符号<b style='color:#51b72f;'><i class='fa fa-internet-explorer fa-fw'></i></b>→选择“<b style='color:#51b72f;'><i class='fa fa-flash fa-fw'></i></b><b style='color:#51b72f;'>极速模式</b>”</div></div>";
-		$("#browser-notice").html(html)
-	}
-}
-speedModeNotice();
-</script>
+<?php ep_layout_foot(); ?>
