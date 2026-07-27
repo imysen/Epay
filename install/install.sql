@@ -40,12 +40,14 @@ INSERT INTO `pre_config` VALUES ('login_alipay', '0');
 INSERT INTO `pre_config` VALUES ('login_alipay_channel', '0');
 INSERT INTO `pre_config` VALUES ('login_wx', '0');
 INSERT INTO `pre_config` VALUES ('login_wx_channel', '0');
-INSERT INTO `pre_config` VALUES ('reg_open', '1');
-INSERT INTO `pre_config` VALUES ('reg_pay', '1');
+INSERT INTO `pre_config` VALUES ('login_wxa', '0');
+INSERT INTO `pre_config` VALUES ('root_redirect_url', '');
+INSERT INTO `pre_config` VALUES ('reg_open', '0');
+INSERT INTO `pre_config` VALUES ('reg_pay', '0');
 INSERT INTO `pre_config` VALUES ('reg_pre_uid', '1000');
 INSERT INTO `pre_config` VALUES ('reg_pre_price', '5');
 INSERT INTO `pre_config` VALUES ('verifytype', '1');
-INSERT INTO `pre_config` VALUES ('test_open', '1');
+INSERT INTO `pre_config` VALUES ('test_open', '0');
 INSERT INTO `pre_config` VALUES ('test_pre_uid', '1000');
 INSERT INTO `pre_config` VALUES ('mail_cloud', '0');
 INSERT INTO `pre_config` VALUES ('mail_smtp', 'smtp.qq.com');
@@ -442,6 +444,16 @@ CREATE TABLE `pre_psorder` (
  KEY `trade_no` (`trade_no`),
  KEY `addtime` (`addtime`,`delay`,`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `pre_onecode`;
+CREATE TABLE `pre_onecode` (
+  `code` varchar(32) NOT NULL,
+  `uid` int(11) DEFAULT NULL,
+  `addtime` datetime DEFAULT NULL,
+  `bindtime` datetime DEFAULT NULL,
+ PRIMARY KEY (`code`),
+ KEY `uid` (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `pre_subchannel`;
 CREATE TABLE `pre_subchannel` (

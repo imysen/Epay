@@ -24,14 +24,14 @@ if($payer){
 
 if(!empty($paytype) && isset($_SESSION['paypage_typeid']) && isset($_SESSION['paypage_paymax']) && isset($_SESSION['paypage_paymin'])){
 	if(!empty($_SESSION['paypage_paymin']) && $_SESSION['paypage_paymin']>0 && $money<$_SESSION['paypage_paymin']){
-		showerrorjson('当前支付通道最大支付金额是'.$_SESSION['paypage_paymin'].'元');
+		showerrorjson('当前支付通道最小支付金额是'.$_SESSION['paypage_paymin'].'元');
 	}
 	if(!empty($_SESSION['paypage_paymax']) && $_SESSION['paypage_paymax']>0 && $money>$_SESSION['paypage_paymax']){
-		showerrorjson('当前支付通道最小支付金额是'.$_SESSION['paypage_paymax'].'元');
+		showerrorjson('当前支付通道最大支付金额是'.$_SESSION['paypage_paymax'].'元');
 	}
 }
 
-$userrow = $DB->getRow("SELECT `mode`,`ordername`,`channelinfo`,`money`,`pay_minmoney`,`pay_maxmoney` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
+$userrow = $DB->getRow("SELECT `gid`,`mode`,`ordername`,`channelinfo`,`money`,`pay_minmoney`,`pay_maxmoney` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
 
 if($userrow['pay_maxmoney']>0 && $money>$userrow['pay_maxmoney'])showerrorjson('最大支付金额是'.$userrow['pay_maxmoney'].'元');
 if($userrow['pay_minmoney']>0 && $money<$userrow['pay_minmoney'])showerrorjson('最小支付金额是'.$userrow['pay_minmoney'].'元');
@@ -87,7 +87,7 @@ if(!empty($paytype) && isset($_SESSION['paypage_typeid']) && isset($_SESSION['pa
 		if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart']){
 			$randmoney = randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
 			$realmoney = round($realmoney + $randmoney, 2);
-			if($submitData['mode']==1) $getmoney = round($getmoney + $randmoney, 2);
+			if($_SESSION['paypage_mode']==1) $getmoney = round($getmoney + $randmoney, 2);
 		}
 
 		$DB->update('order', ['type'=>$typeid, 'channel'=>$channelid, 'subchannel'=>$subchannelid, 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no]);

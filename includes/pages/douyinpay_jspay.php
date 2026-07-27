@@ -1,74 +1,25 @@
 <?php
 // 抖音支付JSAPI页面
-
 if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'douyinpay';
+$title = '抖音支付';
+ep_pay_head($title, $channel);
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <title>抖音支付</title>
-    <link href="/assets/pay/css/weui.css" rel="stylesheet" />
-</head>
-<body>
-    <div class="container js_container">
-        <div class="page msg">
-            <div class="weui_msg">
-                <div class="weui_icon_area"><i class="weui_icon_info weui_icon_msg"></i></div>
-                <div class="weui_text_area">
-                    <h2 class="weui_msg_title">正在跳转支付...</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
+<div class="ep-pay-card" x-data="jspayDy()" x-init="init()">
+  <div class="ep-channel-bar"><div class="ep-channel-name"><span class="ep-channel-logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></span>抖音支付</div></div>
+  <div class="ep-amount-area" style="padding-top:40px"><div class="ep-amount"><span class="symbol">¥</span><?=htmlspecialchars($order['realmoney'])?></div><div class="ep-subject"><?=htmlspecialchars($order['name'])?></div></div>
+  <div class="ep-status-bar pending"><span class="ep-dot-pulse"></span><span x-text="statusText">正在跳转支付…</span></div>
+  <div class="ep-detail" :class="detailOpen?'open':''">
+    <div class="ep-detail-toggle" @click="detailOpen=!detailOpen"><span class="label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>订单详情</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="ep-detail-body"><div class="ep-detail-grid"><span class="k">商品名称</span><span class="v"><?=htmlspecialchars($order['name'])?></span><span class="k">系统订单号</span><span class="v mono"><?=htmlspecialchars($order['trade_no'])?></span></div></div>
+  </div>
+  <div class="ep-pay-foot">支付安全由中国人民财产保险股份有限公司承保</div>
+  <div x-data="poller('/getshop.php', {type:'douyinpay', trade_no:'<?=addslashes(TRADE_NO)?>'}, {interval:2000, delay:0})" @poll-ok.window="onOk()" style="display:none"></div>
+</div>
 <script>
-document.body.addEventListener('touchmove', function (event) {
-	event.preventDefault();
-},{ passive: false });
-
-const sdk = window.DouyinOpenJSBridge;
-
-sdk.config({});
-sdk.ready(() => {
-  onBridgeReady()
-});
-function onBridgeReady() {
-    sdk.ttcjpay.dypay({
-      sdk_info: <?php echo $jsApiParameters; ?>,
-      success: res => {
-        if (res && res.code === '0') {
-			loadmsg();
-        }
-      },
-      fail: res => {
-        if (res && res.code === -2) {
-			layer.msg('请升级抖音APP');
-        }
-      }
-    });
-}
-function loadmsg() {
-	$.ajax({
-		type: "GET",
-		dataType: "json",
-		url: "/getshop.php",
-		data: {type: "douyinpay", trade_no: "<?php echo TRADE_NO?>"},
-		success: function (data) {
-			if (data.code == 1) {
-				layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.01,time: 15000});
-				window.location.href=<?php echo $redirect_url?>;
-			}else{
-				setTimeout("loadmsg()", 2000);
-			}
-		},
-		error: function () {
-			setTimeout("loadmsg()", 2000);
-		}
-	});
-}
+document.body.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+function jspayDy(){return {statusText:'正在跳转支付…',detailOpen:false,init(){var s=window.DouyinOpenJSBridge;s.config({});s.ready(()=>{s.ttcjpay.dypay({sdk_info:<?=$jsApiParameters?>,success:r=>{if(r&&r.code==='0'){window.dispatchEvent(new CustomEvent('poll-ok',{detail:{}}));}},fail:r=>{if(r&&r.code===-2)epToast('error','请升级抖音APP');}});});},onOk(){this.statusText='支付成功,正在跳转…';epToast('success','支付成功,正在跳转');}};}
 </script>
-</body>
-</html>
+<?php echo '</body></html>'; ?>

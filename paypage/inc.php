@@ -2,7 +2,7 @@
 include("../includes/common.php");
 
 function showerror($msg){
-	global $cdnpublic;
+	global $cdnpublic, $conf, $title, $channel;
 	include ROOT.'paypage/error.php';
 	exit;
 }

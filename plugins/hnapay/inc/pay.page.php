@@ -1,476 +1,206 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>快捷支付页面</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="<?php echo $cdnpublic ?>twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome 图标 -->
-    <link rel="stylesheet" href="<?php echo $cdnpublic ?>font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="/assets/css/datepicker.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --success-color: #4cc9f0;
-            --light-bg: #f8f9fa;
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            min-height: 100vh;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .payment-container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-        }
-        
-        .payment-header {
-            background: var(--primary-color);
-            color: white;
-            padding: 25px 30px;
-            text-align: center;
-        }
-        
-        .payment-header h2 {
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .payment-header h2 i {
-            margin-right: 12px;
-        }
-        
-        .payment-body {
-            padding: 30px;
-        }
+<?php
+if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'bank';
+$title = '快捷支付';
+ep_pay_head($title, $channel);
+?>
+<script src="<?php echo $cdnpublic ?>jquery/3.4.1/jquery.min.js"></script>
+<script src="<?php echo $cdnpublic ?>bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+<script src="<?php echo $cdnpublic ?>bootstrap-datepicker/1.10.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+<script src="<?php echo $cdnpublic ?>jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="<?php echo $cdnpublic ?>layer/3.1.1/layer.js"></script>
+<link href="/assets/css/datepicker.css" rel="stylesheet">
 
-        .credit-card-fields {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .credit-card-fields .form-group {
-            flex: 1;
-        }
-        
-        .btn-primary {
-            background: var(--primary-color);
-            border: none;
-            padding: 12px 24px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-        }
+<div class="ep-pay-card ep-pay-card-form" style="width:min(560px,100%);max-width:560px;text-align:left;padding:0">
+  <div style="padding:20px 24px;border-bottom:1px solid var(--ep-gray-100);display:flex;align-items:center;gap:8px">
+    <span style="color:var(--ep-brand-500)"><?=ep_icon('credit-card',20)?></span>
+    <span style="font-size:16px;font-weight:600;color:var(--ep-gray-800)">快捷支付</span>
+  </div>
 
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
-        }
-
-        .bank-info-row {
-            display: flex;
-            align-items: center;
-            margin-top: 8px;
-            display: none; /* 默认隐藏 */
-        }
-        
-        .bank-name-display {
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-right: 15px;
-        }
-        
-        .card-type-display {
-            background: var(--success-color);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .sms-group {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .sms-group .form-group {
-            flex: 1;
-        }
-        
-        .timer {
-            display: inline-block;
-            width: 30px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        @media (max-width: 768px) {
-            .payment-body {
-                padding: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="payment-container">
-        <div class="payment-header">
-            <h2><i class="fa fa-bolt"></i> 快捷支付</h2>
-            <p class="mb-0">安全、便捷的支付体验</p>
+  <form id="paymentForm" style="padding:20px 24px">
+    <div class="ep-card" style="margin-bottom:20px;padding:12px 16px;border-left:3px solid var(--ep-brand-500);border-radius:0 8px 8px 0">
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:12px;color:var(--ep-gray-400)">订单号</div>
+          <div style="font-size:13px;color:var(--ep-gray-700);font-family:var(--ep-font-mono)"><?php echo TRADE_NO ?></div>
         </div>
-        
-        <form id="paymentForm" class="payment-body">
-            <div class="mb-4">
-                <div class="card mb-4" style="border-left: 4px solid var(--primary-color);">
-                    <div class="card-body py-2">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fa fa-book me-2 fa-fw text-muted"></i>
-                                    <div>
-                                        <small class="text-muted">订单号</small>
-                                        <div><?php echo TRADE_NO ?></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fa fa-leaf me-2 fa-fw text-muted"></i>
-                                    <div>
-                                        <small class="text-muted">订单金额</small>
-                                        <div class="fw-bold" style="color:coral">¥<?php echo $order['realmoney'] ?></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <h4 class="mb-3">请输入快捷支付绑卡信息</h4>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">银行卡号</label>
-                <input type="text" class="form-control form-control-lg" id="card-number" placeholder="请输入银行卡号" required pattern="\d{15,19}" maxlength="19">
-                <div class="invalid-feedback">请输入有效的银行卡号</div>
-                <div class="bank-info-row mt-2" id="bank-info-display">
-                    <span class="bank-name-display" id="bank-name-display">-</span>
-                    <span class="card-type-display" id="card-type-display">-</span>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">手机号码</label>
-                <input type="tel" class="form-control form-control-lg" id="phone-number" placeholder="银行卡绑定的手机号码" required pattern="1[3-9]\d{9}" maxlength="11">
-                <div class="invalid-feedback">请输入有效的手机号码</div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">持卡人姓名</label>
-                    <input type="text" class="form-control form-control-lg" id="cardholder-name" placeholder="请输入姓名" required pattern="[\u4E00-\u9FA5]{2,20}" maxlength="20">
-                    <div class="invalid-feedback">请输入正确的姓名</div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">身份证号码</label>
-                    <input type="text" class="form-control form-control-lg" id="id-number" placeholder="请输入身份证号" required pattern="\d{17}[\dXx]" maxlength="18">
-                    <div class="invalid-feedback">请输入有效的身份证号码</div>
-                </div>
-            </div>
-            
-            <div id="credit-card-fields" class="mb-3" style="display:none;">
-                <label class="form-label">信用卡信息</label>
-                <div class="credit-card-fields">
-                    <div class="form-group">
-                        <input type="text" class="form-control form-control-lg" id="expiry-date" placeholder="到期时间" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" class="form-control form-control-lg" id="cvv" placeholder="CVV码" maxlength="3" required pattern="\d{3}">
-                        <div class="invalid-feedback">请输入有效的CVV码</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <label class="form-label">短信验证码</label>
-                <div class="sms-group">
-                    <div class="form-group">
-                        <input type="text" class="form-control form-control-lg" id="bind-sms-code" placeholder="请输入短信验证码" required>
-                    </div>
-                    <button class="btn btn-outline-primary" id="get-sms-code">
-                        获取验证码
-                    </button>
-                </div>
-            </div>
-
-            <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="agree-protocol" required>
-                <label class="form-check-label" for="agree-protocol">
-                    我已阅读并同意<a href="/pay/agreement/<?php echo TRADE_NO?>/" target="_blank">《新生支付服务协议》</a>
-                </label>
-                <div class="invalid-feedback">请阅读并同意支付服务协议</div>
-            </div>
-
-            <div class="d-grid">
-                <button class="btn btn-primary btn-lg" id="confirm-payment" disabled>
-                    确认支付 <i class="fa fa-check ms-2"></i>
-                </button>
-            </div>
-        </form>
+        <div>
+          <div style="font-size:12px;color:var(--ep-gray-400)">订单金额</div>
+          <div style="font-size:15px;font-weight:600;color:var(--ep-gray-900)">¥<?php echo $order['realmoney'] ?></div>
+        </div>
+      </div>
     </div>
 
-    <script src="<?php echo $cdnpublic ?>jquery/3.4.1/jquery.min.js"></script>
-    <script src="<?php echo $cdnpublic ?>twitter-bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-    <script src="<?php echo $cdnpublic ?>bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
-    <script src="<?php echo $cdnpublic ?>bootstrap-datepicker/1.10.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
-    <script src="<?php echo $cdnpublic ?>jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <script src="<?php echo $cdnpublic ?>layer/3.1.1/layer.js"></script>
+    <div style="font-size:14px;font-weight:500;color:var(--ep-gray-700);margin-bottom:16px">请输入快捷支付绑卡信息</div>
 
-    <script>
-    $(document).ready(function() {
-        
-        // 当前状态
-        let currentStep = 1;
-        let smsToken = null;
-        let bankCardType = null;
-        let protocol = null;
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:13px;color:var(--ep-gray-600);margin-bottom:6px">银行卡号</label>
+      <input class="ep-input" style="width:100%;height:44px;font-size:16px" id="card-number" placeholder="请输入银行卡号" required pattern="\d{15,19}" maxlength="19">
+      <div id="bank-info-display" style="display:none;margin-top:8px;align-items:center;gap:8px">
+        <span id="bank-name-display" style="font-weight:500;color:var(--ep-brand-500)">-</span>
+        <span id="card-type-display" style="background:var(--ep-info-50,#F0F9FF);color:var(--ep-info-500,#0EA5E9);padding:2px 8px;border-radius:4px;font-size:12px">-</span>
+      </div>
+    </div>
 
-        $('input').on('input', function() {
-            $(this).removeClass('is-invalid');
-        });
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:13px;color:var(--ep-gray-600);margin-bottom:6px">手机号码</label>
+      <input class="ep-input" style="width:100%;height:44px;font-size:16px" id="phone-number" placeholder="银行卡绑定的手机号码" required pattern="1[3-9]\d{9}" maxlength="11">
+    </div>
 
-        $('#phone-number').on('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
+    <div style="display:flex;gap:12px;margin-bottom:16px">
+      <div style="flex:1">
+        <label style="display:block;font-size:13px;color:var(--ep-gray-600);margin-bottom:6px">持卡人姓名</label>
+        <input class="ep-input" style="width:100%;height:44px;font-size:16px" id="cardholder-name" placeholder="请输入姓名" required pattern="[一-龥]{2,20}" maxlength="20">
+      </div>
+      <div style="flex:1">
+        <label style="display:block;font-size:13px;color:var(--ep-gray-600);margin-bottom:6px">身份证号码</label>
+        <input class="ep-input" style="width:100%;height:44px;font-size:16px" id="id-number" placeholder="请输入身份证号" required pattern="\d{17}[\dXx]" maxlength="18">
+      </div>
+    </div>
 
-        $('#card-number').on('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
+    <div id="credit-card-fields" style="display:none;margin-bottom:16px">
+      <label style="display:block;font-size:13px;color:var(--ep-gray-600);margin-bottom:6px">信用卡信息</label>
+      <div style="display:flex;gap:12px">
+        <input class="ep-input" style="flex:1;height:44px;font-size:16px" id="expiry-date" placeholder="到期时间" required>
+        <input class="ep-input" style="flex:1;height:44px;font-size:16px" id="cvv" placeholder="CVV码" maxlength="3" required pattern="\d{3}">
+      </div>
+    </div>
 
-        $('#expiry-date').datepicker({
-            format: 'mm/yy',
-            startView: "months",
-            minViewMode: "months",
-            autoclose: true,
-            clearBtn: true,
-            language: 'zh-CN'
-        });
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-size:13px;color:var(--ep-gray-600);margin-bottom:6px">短信验证码</label>
+      <div style="display:flex;gap:12px">
+        <input class="ep-input" style="flex:1;height:44px;font-size:16px" id="bind-sms-code" placeholder="请输入短信验证码" required>
+        <button class="ep-btn ep-btn-secondary" style="height:44px;white-space:nowrap" id="get-sms-code">获取验证码</button>
+      </div>
+    </div>
 
-        // 银行卡号输入事件
-        $('#card-number').on('change', function() {
-            let cardNumber = $(this).val().replace(/\s/g, '');
+    <div style="margin-bottom:20px;display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="agree-protocol" required style="width:16px;height:16px">
+      <label for="agree-protocol" style="font-size:13px;color:var(--ep-gray-600)">我已阅读并同意<a href="/pay/agreement/<?php echo TRADE_NO?>/" target="_blank" style="color:var(--ep-brand-500)">《新生支付服务协议》</a></label>
+    </div>
 
-            if (/^\d{16,19}$/.test(cardNumber)) {
-                const formData = {
-                    action: 'query_card',
-                    cardno: cardNumber,
-                };
-                var ii = layer.load(2, {shade:[0.1,'#fff']});
-                $.ajax({
-                    url: '?',
-                    method: 'POST',
-                    data: formData,
-                    dataType: 'json',
-                    success: function(response) {
-                        layer.close(ii);
-                        if (response.code == 0) {
-                            $('#bank-name-display').text(response.data.bank_name);
-                            var card_type_arr = {
-                                'DC': '储蓄卡',
-                                'CC': '信用卡',
-                                'SCC': '准贷记卡',
-                                'PC': '预付费卡',
-                            };
-                            $('#card-type-display').text(card_type_arr[response.data.card_type]);
-                            $('#bank-info-display').show();
-                            bankCardType = response.data.card_type == 'CC' ? 'credit' : 'debit';
-                            if(response.data.card_type == 'CC'){
-                                $('#credit-card-fields').show();
-                            }else{
-                                $('#credit-card-fields').hide();
-                            }
-                        } else {
-                            $('#bank-info-display').hide();
-                            layer.alert(response.msg, {icon: 2});
-                        }
-                    },
-                    error: function() {
-                        layer.close(ii);
-                        alert('网络请求异常，请检查网络连接');
-                    }
-                });
-            } else {
-                $('#bank-info-display').hide();
-                $('#credit-card-fields').hide();
-            }
-        });
+    <button class="ep-btn ep-btn-primary" style="width:100%;height:48px;font-size:16px" id="confirm-payment" disabled>确认支付</button>
+  </form>
+</div>
 
-        $('#get-sms-code').click(function(){
-            let isValid = true;
+<style>
+body.ep-app{align-items:flex-start!important;overflow-y:auto}
+.ep-pay-card-form{margin:auto 0}
+.ep-pay-card-form .ep-input.is-invalid{border-color:var(--ep-danger-500);box-shadow:0 0 0 3px var(--ep-danger-50)}
+.ep-pay-card-form .ep-btn:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:520px){
+  .ep-pay-card-form form>div[style*="display:flex"]{flex-direction:column}
+  .ep-pay-card-form{margin:0}
+}
+</style>
 
-            $('#paymentForm input:visible').each(function() {
-                const $input = $(this);
-                const pattern = new RegExp($input.attr('pattern'));
-                
-                if (!pattern.test($input.val())) {
-                    $input.addClass('is-invalid');
-                    isValid = false;
-                }
-            });
+<script>
+$(document).ready(function() {
+    let smsToken = null;
+    let bankCardType = null;
 
-            if (!isValid) return;
+    $('input').on('input', function() { $(this).removeClass('is-invalid'); });
+    $('#phone-number').on('input', function() { this.value = this.value.replace(/\D/g, ''); });
+    $('#card-number').on('input', function() { this.value = this.value.replace(/\D/g, ''); });
 
-            const $btn = $(this).prop('disabled', true);
+    $('#expiry-date').datepicker({format:'mm/yy',startView:"months",minViewMode:"months",autoclose:true,clearBtn:true,language:'zh-CN'});
 
-            const formData = {
-                action: 'request',
-                phone: $('#phone-number').val(),
-                cardno: $('#card-number').val(),
-                cardtype: bankCardType,
-                name: $('#cardholder-name').val(),
-                idcard: $('#id-number').val(),
-                expiry: $('#expiry-date').val(),
-                cvv: $('#cvv').val(),
-            };
-
+    $('#card-number').on('change', function() {
+        let cardNumber = $(this).val().replace(/\s/g, '');
+        if (/^\d{16,19}$/.test(cardNumber)) {
             var ii = layer.load(2, {shade:[0.1,'#fff']});
-            $.ajax({
-                url: '?',
-                method: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: function(response) {
+            $.ajax({url:'?',method:'POST',data:{action:'query_card',cardno:cardNumber},dataType:'json',
+                success: function(r) {
                     layer.close(ii);
-                    $btn.prop('disabled', false);
-                    if (response.code == 0) {
-                        smsToken = response.token;
-                        layer.msg('短信验证码已发送，请注意查收', {icon: 1, time: 1500});
-                        $('#confirm-payment').prop('disabled', false);
-                        startBindSmsCountdown();
-                    } else {
-                        layer.alert(response.msg, {icon: 2});
-                    }
+                    if (r.code == 0) {
+                        $('#bank-name-display').text(r.data.bank_name);
+                        var t = {'DC':'储蓄卡','CC':'信用卡','SCC':'准贷记卡','PC':'预付费卡'};
+                        $('#card-type-display').text(t[r.data.card_type]);
+                        $('#bank-info-display').css('display','flex');
+                        bankCardType = r.data.card_type == 'CC' ? 'credit' : 'debit';
+                        if(r.data.card_type == 'CC') $('#credit-card-fields').show(); else $('#credit-card-fields').hide();
+                    } else { $('#bank-info-display').hide(); layer.alert(r.msg, {icon:2}); }
                 },
-                error: function() {
-                    layer.close(ii);
-                    $btn.prop('disabled', false);
-                    alert('网络请求异常，请检查网络连接');
-                }
+                error: function() { layer.close(ii); alert('网络请求异常，请检查网络连接'); }
             });
-        })
+        } else { $('#bank-info-display').hide(); $('#credit-card-fields').hide(); }
+    });
 
-        $('#confirm-payment').click(function(){
-            if (!smsToken) {
-                layer.alert('请先获取短信验证码');
-                return;
+    $('#get-sms-code').click(function(e){
+        e.preventDefault();
+        let isValid = true;
+        $('#card-number,#phone-number,#cardholder-name,#id-number,#credit-card-fields input:visible').each(function() {
+            const $input = $(this);
+            const value = $input.val();
+            const pattern = $input.attr('pattern');
+            if (!value || pattern && !new RegExp('^(?:'+pattern+')$').test(value)) {
+                $input.addClass('is-invalid');
+                isValid = false;
             }
-            const smsCode = $('#bind-sms-code').val();
-            if (smsCode == '') {
-                layer.alert('请输入短信验证码');
-                return;
-            }
-            if(!$('#agree-protocol').is(':checked')) {
-                layer.alert('请阅读并同意支付服务协议');
-                return;
-            }
-
-            const $btn = $(this).prop('disabled', true);
-
-            const formData = {
-                action: 'confirm',
-                phone: $('#phone-number').val(),
-                token: smsToken,
-                smscode: smsCode,
-            };
-
-            var ii = layer.load(2, {shade:[0.1,'#fff']});
-            $.ajax({
-                url: '?',
-                method: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: function(response) {
-                    layer.close(ii);
-                    $btn.prop('disabled', false);
-                    if (response.code == 0) {
-                        $.cookie('fastpay_phone', $('#phone-number').val(), {expires: 365, path: '/'});
-                        $.cookie('fastpay_cardno', $('#card-number').val(), {expires: 365, path: '/'});
-                        $.cookie('fastpay_name', $('#cardholder-name').val(), {expires: 365, path: '/'});
-                        $.cookie('fastpay_idcard', $('#id-number').val(), {expires: 365, path: '/'});
-                        layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.1,time: 15000});
-					    setTimeout(window.location.href=response.backurl, 1000);
-                    } else {
-                        layer.alert(response.msg, {icon: 2});
-                    }
-                },
-                error: function() {
-                    layer.close(ii);
-                    $btn.prop('disabled', false);
-                    alert('网络请求异常，请检查网络连接');
-                }
-            });
-        })
-        
-        function startBindSmsCountdown() {
-            let timeLeft = 60;
-            const button = $('#get-sms-code');
-            const originalHtml = button.html();
-            
-            button.prop('disabled', true);
-            
-            const countdown = setInterval(function() {
-                timeLeft--;
-                button.html(`重新发送(${timeLeft})`);
-                
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    button.html(originalHtml);
-                    button.prop('disabled', false);
-                }
-            }, 1000);
+        });
+        if (!bankCardType) {
+            $('#card-number').addClass('is-invalid');
+            isValid = false;
         }
-
-        if($.cookie('fastpay_phone') && $.cookie('fastpay_cardno')) {
-            $('#phone-number').val($.cookie('fastpay_phone'));
-            $('#card-number').val($.cookie('fastpay_cardno'));
-            $('#cardholder-name').val($.cookie('fastpay_name'));
-            $('#id-number').val($.cookie('fastpay_idcard'));
-            $('#card-number').change();
-        }
-
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/getshop.php",
-            data: {type: "bank", trade_no: "<?php echo $order['trade_no']?>"},
-            success: function (data) {
-                if (data.code == 1) {
-					layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.1,time: 15000});
-					setTimeout(window.location.href=data.backurl, 1000);
-                }
-            }
+        if (!isValid) return;
+        const $btn = $(this).prop('disabled', true);
+        var ii = layer.load(2, {shade:[0.1,'#fff']});
+        $.ajax({url:'?',method:'POST',data:{action:'request',phone:$('#phone-number').val(),cardno:$('#card-number').val(),cardtype:bankCardType,name:$('#cardholder-name').val(),idcard:$('#id-number').val(),expiry:$('#expiry-date').val(),cvv:$('#cvv').val()},dataType:'json',
+            success: function(r) {
+                layer.close(ii); $btn.prop('disabled', false);
+                if (r.code == 0) { smsToken = r.token; layer.msg('短信验证码已发送，请注意查收', {icon:1,time:1500}); $('#confirm-payment').prop('disabled', false); startBindSmsCountdown(); }
+                else layer.alert(r.msg, {icon:2});
+            },
+            error: function() { layer.close(ii); $btn.prop('disabled', false); alert('网络请求异常，请检查网络连接'); }
         });
     });
-    </script>
-</body>
-</html>
+
+    $('#confirm-payment').click(function(e){
+        e.preventDefault();
+        if (!smsToken) { layer.alert('请先获取短信验证码'); return; }
+        const smsCode = $('#bind-sms-code').val();
+        if (smsCode == '') { layer.alert('请输入短信验证码'); return; }
+        if(!$('#agree-protocol').is(':checked')) { layer.alert('请阅读并同意支付服务协议'); return; }
+        const $btn = $(this).prop('disabled', true);
+        var ii = layer.load(2, {shade:[0.1,'#fff']});
+        $.ajax({url:'?',method:'POST',data:{action:'confirm',phone:$('#phone-number').val(),token:smsToken,smscode:smsCode},dataType:'json',
+            success: function(r) {
+                layer.close(ii); $btn.prop('disabled', false);
+                if (r.code == 0) {
+                    $.cookie('fastpay_phone', $('#phone-number').val(), {expires:365,path:'/'});
+                    $.cookie('fastpay_cardno', $('#card-number').val(), {expires:365,path:'/'});
+                    $.cookie('fastpay_name', $('#cardholder-name').val(), {expires:365,path:'/'});
+                    $.cookie('fastpay_idcard', $('#id-number').val(), {expires:365,path:'/'});
+                    layer.msg('支付成功，正在跳转中...', {icon:16,shade:0.1,time:15000});
+                    setTimeout(function(){ window.location.href=r.backurl; }, 1000);
+                } else layer.alert(r.msg, {icon:2});
+            },
+            error: function() { layer.close(ii); $btn.prop('disabled', false); alert('网络请求异常，请检查网络连接'); }
+        });
+    });
+
+    function startBindSmsCountdown() {
+        let timeLeft = 60; const button = $('#get-sms-code'); const originalHtml = button.html();
+        button.prop('disabled', true);
+        const countdown = setInterval(function() {
+            timeLeft--; button.html('重新发送('+timeLeft+')');
+            if (timeLeft <= 0) { clearInterval(countdown); button.html(originalHtml); button.prop('disabled', false); }
+        }, 1000);
+    }
+
+    if($.cookie('fastpay_phone') && $.cookie('fastpay_cardno')) {
+        $('#phone-number').val($.cookie('fastpay_phone'));
+        $('#card-number').val($.cookie('fastpay_cardno'));
+        $('#cardholder-name').val($.cookie('fastpay_name'));
+        $('#id-number').val($.cookie('fastpay_idcard'));
+        $('#card-number').change();
+    }
+
+    $.ajax({type:"GET",dataType:"json",url:"/getshop.php",data:{type:"bank",trade_no:"<?php echo $order['trade_no']?>"},
+        success: function(data) { if (data.code == 1) { layer.msg('支付成功，正在跳转中...', {icon:16,shade:0.1,time:15000}); setTimeout(function(){ window.location.href=data.backurl; }, 1000); } }
+    });
+});
+</script>
+<?php echo '</body></html>'; ?>

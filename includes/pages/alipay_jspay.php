@@ -1,84 +1,44 @@
 <?php
 // 支付宝JS支付页面
-
 if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'alipay';
+$title = '支付宝支付';
+ep_pay_head($title, $channel);
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <title>支付宝支付</title>
-    <link href="/assets/pay/css/weui.css" rel="stylesheet" />
-</head>
-<body>
-    <div class="container js_container">
-        <div class="page msg">
-            <div class="weui_msg">
-                <div class="weui_icon_area"><i class="weui_icon_info weui_icon_msg"></i></div>
-                <div class="weui_text_area">
-                    <h2 class="weui_msg_title">正在跳转支付...</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
+<div class="ep-pay-card" x-data="jspayAli()" x-init="init()">
+  <div class="ep-channel-bar"><div class="ep-channel-name"><span class="ep-channel-logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/><path d="M12 6v6l4 2"/></svg></span>支付宝支付</div></div>
+  <div class="ep-amount-area" style="padding-top:40px"><div class="ep-amount"><span class="symbol">¥</span><?=htmlspecialchars($order['realmoney'])?></div><div class="ep-subject"><?=htmlspecialchars($order['name'])?></div></div>
+  <div class="ep-status-bar pending"><span class="ep-dot-pulse"></span><span x-text="statusText">正在跳转支付…</span></div>
+  <div class="ep-detail" :class="detailOpen?'open':''">
+    <div class="ep-detail-toggle" @click="detailOpen=!detailOpen"><span class="label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>订单详情</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="ep-detail-body"><div class="ep-detail-grid"><span class="k">商品名称</span><span class="v"><?=htmlspecialchars($order['name'])?></span><span class="k">系统订单号</span><span class="v mono"><?=htmlspecialchars($order['trade_no'])?></span></div></div>
+  </div>
+  <div class="ep-pay-foot">支付安全由中国人民财产保险股份有限公司承保</div>
+  <div x-data="poller('/getshop.php', {type:'wxpay', trade_no:'<?=addslashes(TRADE_NO)?>'}, {interval:2000, delay:0})" @poll-ok.window="onOk()" style="display:none"></div>
+</div>
+<script src="<?=$cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
 <script>
-document.body.addEventListener('touchmove', function (event) {
-	event.preventDefault();
-},{ passive: false });
-
-var tradeNO = '<?php echo $alipay_trade_no?>';
-
-function Alipayready(callback) {
-    if (window.AlipayJSBridge) {
-        callback && callback();
-    } else {
-        document.addEventListener('AlipayJSBridgeReady', callback, false);
-    }
+document.body.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+function jspayAli(){
+  return {
+    statusText:'正在跳转支付…',detailOpen:false,
+    init(){this.alipayPay();},
+    alipayReady(cb){if(window.AlipayJSBridge){cb&&cb();}else{document.addEventListener('AlipayJSBridgeReady',cb,false);}},
+    alipayPay(){
+      var self=this;
+      this.alipayReady(function(){
+        AlipayJSBridge.call('tradePay',{tradeNO:'<?=addslashes($alipay_trade_no)?>'},function(r){
+          if(r.resultCode=='9000'){self.statusText='支付成功,正在跳转…';window.dispatchEvent(new CustomEvent('poll-ok',{detail:{}}));}
+          else if(r.resultCode=='8000'){self.statusText='正在处理中…';}
+          else if(r.resultCode=='4000'){self.statusText='订单支付失败';}
+          else if(r.resultCode=='6002'){self.statusText='网络连接出错';}
+        });
+      });
+    },
+    onOk(){this.statusText='支付成功,正在跳转…';epToast('success','支付成功,正在跳转');}
+  };
 }
-function AlipayJsPay() {
-	Alipayready(function(){
-		AlipayJSBridge.call("tradePay",{
-			tradeNO: tradeNO
-		}, function(result){
-			var msg = "";
-			if(result.resultCode == "9000"){
-				loadmsg();
-			}else if(result.resultCode == "8000"){
-				msg = "正在处理中";
-			}else if(result.resultCode == "4000"){
-				msg = "订单支付失败";
-			}else if(result.resultCode == "6002"){
-				msg = "网络连接出错";
-			}
-			if (msg!="") {
-				layer.msg(msg);
-			}
-		});
-	});
-}
-function loadmsg() {
-	$.ajax({
-		type: "GET",
-		dataType: "json",
-		url: "/getshop.php",
-		data: {type: "wxpay", trade_no: "<?php echo TRADE_NO?>"},
-		success: function (data) {
-			if (data.code == 1) {
-				layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.01,time: 15000});
-				window.location.href=<?php echo $redirect_url?>;
-			}else{
-				setTimeout("loadmsg()", 2000);
-			}
-		},
-		error: function () {
-			setTimeout("loadmsg()", 2000);
-		}
-	});
-}
-window.onload = AlipayJsPay();
 </script>
-</body>
-</html>
+<?php echo '</body></html>'; ?>

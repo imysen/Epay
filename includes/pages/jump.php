@@ -1,67 +1,32 @@
 <?php
+// 浏览器引导页(微信内提示用外部浏览器打开)
 if(!defined('IN_PLUGIN'))exit();
-$useragent = strtolower($_SERVER['HTTP_USER_AGENT']);
-if(strpos($useragent, 'iphone')!==false || strpos($useragent, 'ipod')!==false){
-	$alert = '<img src="//puep.qpic.cn/coral/Q3auHgzwzM4fgQ41VTF2rLrNvRzmibibqrjTFj5g2kzGyoQj3ViartAEQ/0" class="icon-safari" /> <span id="openm">Safari打开</span>';
-}elseif(strpos($useragent, 'micromessenger')!==false){
-	$alert = '<img src="//puep.qpic.cn/coral/Q3auHgzwzM4fgQ41VTF2rLbNVmztN9ia6GPRJ0IFicucFTr4Pp8xzibsw/0" class="icon-safari" /> <span id="openm">浏览器打开</span>';
-}else{
-	$alert = '<img src="//puep.qpic.cn/coral/Q3auHgzwzM4fgQ41VTF2rOCTm6gtUeQKX7m84xg47iaVosibGckrP0JQ/0" class="icon-safari" /> <span id="openm">浏览器打开</span>';
-}
-?>
-<!DOCTYPE html>
-<html>
+$useragent=strtolower($_SERVER['HTTP_USER_AGENT']);
+if(strpos($useragent,'iphone')!==false||strpos($useragent,'ipod')!==false){$app='Safari';}else{$app='浏览器';}
+?><!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>请使用浏览器打开</title>
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <meta content="yes" name="apple-mobile-web-app-capable"/>
-    <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
-    <meta name="format-detection" content="telephone=no"/>
-    <meta content="false" name="twcClient" id="twcClient"/>
-    <meta name="aplus-touch" content="1"/>
-    <style>
-body,html{width:100%;height:100%}
-*{margin:0;padding:0}
-body{background-color:#fff}
-.top-bar-guidance{font-size:15px;color:#fff;height:70%;line-height:1.8;padding-left:20px;padding-top:20px;background:url(//gw.alicdn.com/tfs/TB1eSZaNFXXXXb.XXXXXXXXXXXX-750-234.png) center top/contain no-repeat}
-.top-bar-guidance .icon-safari{width:25px;height:25px;vertical-align:middle;margin:0 .2em}
-.app-download-tip{margin:0 auto;width:290px;text-align:center;font-size:15px;color:#2466f4;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAcAQMAAACak0ePAAAABlBMVEUAAAAdYfh+GakkAAAAAXRSTlMAQObYZgAAAA5JREFUCNdjwA8acEkAAAy4AIE4hQq/AAAAAElFTkSuQmCC) left center/auto 15px repeat-x}
-.app-download-tip .guidance-desc{background-color:#fff;padding:0 5px}
-.app-download-btn{display:block;width:214px;height:40px;line-height:40px;margin:18px auto 0 auto;text-align:center;font-size:18px;color:#2466f4;border-radius:20px;border:.5px #2466f4 solid;text-decoration:none}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>请使用浏览器打开</title>
+<link href="/assets/css/ep-ui.css?v=<?=filemtime(ROOT.'assets/css/ep-ui.css')?>" rel="stylesheet">
 </head>
-<body>
-<div class="top-bar-guidance">
-    <p>点击右上角<?php echo $alert?></p>
-    <p>可以继续浏览本站哦~</p>
+<body class="ep-app" style="background:var(--ep-gray-50);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px">
+<div style="max-width:360px;width:100%;background:#fff;border-radius:12px;box-shadow:var(--ep-shadow-sm);padding:48px 24px;text-align:center">
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--ep-brand-50);color:var(--ep-brand-600);margin:0 auto 20px;display:flex;align-items:center;justify-content:center">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+  </div>
+  <h2 style="font-size:20px;font-weight:600;color:var(--ep-gray-900);margin-bottom:4px">请使用<?=$app?>打开</h2>
+  <p style="font-size:14px;color:var(--ep-gray-500);margin-bottom:24px">点击右上角选择在<?=$app?>中打开</p>
+  <a class="ep-btn ep-btn-primary" style="height:44px;width:100%" id="J_BtnDowanloadApp">点此继续访问</a>
 </div>
-<div class="app-download-tip">
-    <span class="guidance-desc">您也可以复制本站网址，到其它浏览器打开</span>
-</div>
-<a class="app-download-btn" id="J_BtnDowanloadApp">点此继续访问</a>
-<a style="display: none;" href="" id="vurl" rel="noreferrer"></a>
-
-<script src="//lib.baomitu.com/jquery/1.12.4/jquery.min.js"></script>
+<a style="display:none" href="" id="vurl" rel="noreferrer"></a>
 <script>
-function openu(u){
-document.getElementById("vurl").href= u;
-document.getElementById("vurl").click();
+var u=window.location.href;document.body.addEventListener('touchmove',function(e){e.preventDefault();});
+if(navigator.userAgent.indexOf('QQ/')>-1){
+  ['ucbrowser://'+u,'mttbrowser://url='+u,'googlechrome://'+u].forEach(function(s){document.getElementById('vurl').href=s;document.getElementById('vurl').click()});
+  document.addEventListener('click',function(){['ucbrowser://'+u,'mttbrowser://url='+u,'googlechrome://'+u].forEach(function(s){document.getElementById('vurl').href=s;document.getElementById('vurl').click()})});
 }
-var url = window.location.href;
-	document.querySelector('body').addEventListener('touchmove', function (event) {
-		event.preventDefault();
-	});
-	if(navigator.userAgent.indexOf("QQ/") > -1){
-		openu("ucbrowser://"+url);
-		openu("mttbrowser://url="+url);
-		openu("googlechrome://"+url);
-		$("html").on("click",function(){
-			openu("ucbrowser://"+url);
-			openu("mttbrowser://url="+url);
-			openu("googlechrome://"+url);
-		});
-	}
 </script>
 </body>
 </html>

@@ -1,40 +1,28 @@
 <?php
 if(!defined('IN_CRONLITE'))exit();
-?><html class="weui-msg">
-<head>
-    <meta charset="UTF-8">
-    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>错误提示</title>
-    <link href="/assets/css/weui.min.css" rel="stylesheet">
-    <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
-</head>
-<body>
-<div class="container">
-<div class="page">
-<div class="weui-msg">
-    <div class="weui-msg__icon-area">
-        <i class="weui-icon-warn weui-icon_msg"></i>
-    </div>
-    <div class="weui-msg__text-area">
-        <h2 class="weui-msg__title"><?php echo $msg?></h2>
-    </div>
-    <div class="weui-msg__opr-area">
-        <p class="weui-btn-area">
-            <a href="javascript:;" class="weui-btn weui-btn_default" id="Close">关闭</a>
-        </p>
-    </div>
-    <div class="weui-msg__extra-area">
-        <div class="weui-footer"><p class="weui-footer__links"></p></div>
-    </div>
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'wxpay';
+$title = '错误提示';
+ep_pay_head($title, $channel);
+?>
+
+<div class="ep-pay-card" style="width:min(420px,100%);text-align:center;padding:40px 24px 32px">
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--ep-danger-50);color:var(--ep-danger-500);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px">
+    <?=ep_icon('alert',32)?>
+  </div>
+  <div style="font-size:16px;font-weight:600;color:var(--ep-gray-900);margin-bottom:8px"><?=htmlspecialchars($msg)?></div>
+  <button class="ep-btn ep-btn-secondary" id="Close" style="width:100%;height:44px;margin-top:24px">关闭</button>
 </div>
-</div>
-</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="js/close.js"></script>
+
 <script>
-document.body.addEventListener('touchmove', function (event) {
-	event.preventDefault();
-},{ passive: false });
+document.getElementById('Close').addEventListener('click',function(){
+  var ua=navigator.userAgent;
+  if(ua.indexOf('AlipayClient')>-1 && window.AlipayJSBridge){AlipayJSBridge.call('popWindow');}
+  else if(ua.indexOf('MicroMessenger')>-1 && typeof WeixinJSBridge!=='undefined'){WeixinJSBridge.call('closeWindow');}
+  else{window.opener=null;window.close();if(window.location.href.indexOf('close=1')===-1)window.location.href=window.location.href+'&close=1';}
+});
+document.body.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
 </script>
-</body>
-</html>
+
+<?php echo '</body></html>'; ?>

@@ -1,89 +1,40 @@
 <?php
-if(!defined('IN_PLUGIN'))exit();?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta http-equiv="Content-Language" content="zh-cn">
-<meta name="renderer" content="webkit">
-<title>支付宝支付</title>
-<link href="/assets/css/alipay_pay.css?v=2" rel="stylesheet" media="screen">
+if(!defined('IN_PLUGIN'))exit();
+define('IN_EPAY', true);
+include_once ROOT.'includes/ep_ui.php';
+$channel = 'alipay';
+$title = '支付宝支付';
+ep_pay_head($title, $channel);
+?>
+
+<div class="ep-pay-card" style="width:min(420px,100%);text-align:center;padding:32px 24px">
+  <div style="width:52px;height:52px;border-radius:8px;background:var(--ep-channel-bg);color:var(--ep-channel);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px"><?=ep_icon('wallet',26)?></div>
+  <div style="font-size:16px;font-weight:600;color:var(--ep-gray-900)">支付宝支付</div>
+  <div style="font-size:32px;font-weight:600;color:var(--ep-gray-900);margin-top:12px">¥<?=htmlspecialchars($order['realmoney'])?></div>
+  <div style="font-size:13px;color:var(--ep-gray-500);margin-top:6px"><?=htmlspecialchars($order['name'])?></div>
+
+  <div style="border-top:1px solid var(--ep-gray-100);margin:24px -24px 20px"></div>
+  <div style="font-size:15px;font-weight:500;color:var(--ep-gray-800)">请选择付款 APP</div>
+  <div style="font-size:12px;color:var(--ep-gray-400);margin-top:4px">Please select your wallet region</div>
+  <div class="wallet-options">
+    <a class="wallet-option" href="?type=ALIPAYCN"><img src="https://payment.pa-sys.com/imgs/alipay-cn-20240905.png" alt="支付宝中国"><span>支付宝（中国）</span></a>
+    <a class="wallet-option" href="?type=ALIPAYHK"><img src="https://payment.pa-sys.com/imgs/alipay-hk-20240905.png" alt="AlipayHK"><span>AlipayHK</span></a>
+  </div>
+
+  <div class="ep-detail open" style="text-align:left;margin:0 -24px">
+    <div class="ep-detail-body" style="max-height:240px"><div class="ep-detail-grid">
+      <span class="k">商品名称</span><span class="v"><?=htmlspecialchars($order['name'])?></span>
+      <span class="k">系统订单号</span><span class="v ep-mono"><?=htmlspecialchars($order['trade_no'])?></span>
+      <span class="k">创建时间</span><span class="v"><?=htmlspecialchars($order['addtime'])?></span>
+    </div></div>
+  </div>
+</div>
 <style>
-.alipay-row{display:flex;justify-content:center;align-items:center;margin-top:35px}
-.alipay-col{margin:0 25px;text-align:center}
-.alipay-col p{margin:3px 0 10px;font-size:14px;color:#000}
-.alipay-logo{width:100px}
-.alipay-logo:hover{box-shadow:1px 3px 10px #888}
+.wallet-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0 24px}.wallet-option{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1px solid var(--ep-gray-200);border-radius:8px;color:var(--ep-gray-700);font-size:13px;text-decoration:none}.wallet-option:hover{border-color:var(--ep-brand-500);background:var(--ep-brand-50);text-decoration:none}.wallet-option img{width:68px;height:68px;object-fit:contain}
 </style>
-</head>
-<body>
-<div class="body">
-<h1 class="mod-title">
-<span class="ico-wechat"></span><span class="text">支付宝支付</span>
-</h1>
-<div class="mod-ct">
-<div class="order">
-</div>
-<div class="amount">¥<?php echo $order['realmoney']?></div>
-<div style="margin-top: 30px">
-<div style="font-size:16px">请选择付款APP</div>
-<div style="font-size:14px;color:#999">Please select your wallet region</div>
-<div class="alipay-row">
-    <div class="alipay-col">
-        <a href="?type=ALIPAYCN"><img class="alipay-logo" src="https://payment.pa-sys.com/imgs/alipay-cn-20240905.png">
-        <p>支付宝(中国)</p></a>
-    </div>
-    <div class="alipay-col">
-        <a href="?type=ALIPAYHK"><img class="alipay-logo" src="https://payment.pa-sys.com/imgs/alipay-hk-20240905.png">
-        <p>AlipayHK</p></a>
-    </div>
-</div>
-<div></div>
-</div>
-<div class="detail detail-open" id="orderDetail">
-<dl class="detail-ct">
-<dt>购买物品</dt>
-<dd id="productName"><?php echo $order['name']?></dd>
-<dt>商户订单号</dt>
-<dd id="billId"><?php echo $order['trade_no']?></dd>
-<dt>创建时间</dt>
-<dd id="createTime"><?php echo $order['addtime']?></dd>
-</dl>
-</div>
-<div class="tip">
-<span class="dec dec-left"></span>
-<span class="dec dec-right"></span>
-</div>
-<div class="tip-text">
-</div>
-</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
-<script src="<?php echo $cdnpublic?>jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 <script>
-    function loadmsg() {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/getshop.php",
-            data: {type: "alipay", trade_no: "<?php echo $order['trade_no']?>"},
-            success: function (data) {
-                if (data.code == 1) {
-					layer.msg('支付成功，正在跳转中...', {icon: 16,shade: 0.1,time: 15000});
-					setTimeout(window.location.href=data.backurl, 1000);
-                }else{
-                    setTimeout("loadmsg()", 2000);
-                }
-            },
-            error: function () {
-                setTimeout("loadmsg()", 2000);
-            }
-        });
-    }
-	window.onload = function(){
-		setTimeout("loadmsg()", 2000);
-	}
+(function poll(){
+  fetch('/getshop.php?'+new URLSearchParams({type:'alipay',trade_no:<?=json_encode($order['trade_no'])?>}),{credentials:'same-origin'}).then(r=>r.json()).then(d=>{if(d.code===1){window.location.href=d.backurl;return;}setTimeout(poll,2000);}).catch(()=>setTimeout(poll,2000));
+})();
 </script>
-</body>
-</html>
+<?php echo '</body></html>'; ?>

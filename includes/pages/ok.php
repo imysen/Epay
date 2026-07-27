@@ -1,73 +1,29 @@
 <?php
 // 支付成功页面
-
 if(!defined('IN_PLUGIN'))exit();
-?>
-<!DOCTYPE html>
-<html>
+?><!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-	<title>支付结果</title>
-	<link href="/assets/pay/css/weui.css" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+<title>支付成功</title>
+<link href="/assets/css/ep-ui.css?v=<?=filemtime(ROOT.'assets/css/ep-ui.css')?>" rel="stylesheet">
 </head>
-<body>
-	<div class="container js_container">
-		<div class="page msg">
-			<div class="weui_msg">
-				<div class="weui_icon_area"><i class="weui_icon_success weui_icon_msg"></i></div>
-				<div class="weui_text_area">
-					<h2 class="weui_msg_title">支付成功</h2>
-					<p class="weui_msg_desc">支付成功，请回到浏览器查看订单</p>
-				</div>
-				<div class="weui_opr_area">
-					<p class="weui_btn_area">
-						<a href="javascript:;" class="weui_btn weui_btn_primary" id="Close">关闭</a>
-						<!--a href="javascript:;" class="weui_btn weui_btn_default">返回</a-->
-					</p>
-				</div>
-			</div>
-		</div>
-	</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script type="text/javascript">
-	document.body.addEventListener('touchmove', function (event) {
-		event.preventDefault();
-	},{ passive: false });
-	if(navigator.userAgent.indexOf("AlipayClient") > -1){
-		function Alipayready(callback) {
-			if (window.AlipayJSBridge) {
-				callback && callback();
-			} else {
-				document.addEventListener('AlipayJSBridgeReady', callback, false);
-			}
-		}
-		Alipayready(function(){
-			$('.weui_opr_area #Close').click(function() {
-				AlipayJSBridge.call('popWindow');
-			});
-		})
-	}else if(navigator.userAgent.indexOf("MicroMessenger") > -1){
-		if (typeof WeixinJSBridge == "undefined") {
-			if (document.addEventListener) {
-				document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-			} else if (document.attachEvent) {
-				document.attachEvent('WeixinJSBridgeReady', jsApiCall);
-				document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
-			}
-		} else {
-			jsApiCall();
-		}
-		function jsApiCall() {
-			$('.weui_opr_area #Close').click(function() {
-				WeixinJSBridge.call('closeWindow');
-			});
-		}
-	}else{
-		$('.weui_opr_area #Close').click(function() {
-			window.opener=null;window.close();
-		});
-	}
+<body class="ep-app" style="background:var(--ep-gray-50);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px">
+<div style="max-width:360px;width:100%;background:#fff;border-radius:12px;box-shadow:var(--ep-shadow-sm);padding:48px 24px;text-align:center">
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--ep-success-50);color:var(--ep-success-600);margin:0 auto 20px;display:flex;align-items:center;justify-content:center">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  </div>
+  <h2 style="font-size:20px;font-weight:600;color:var(--ep-gray-900);margin-bottom:8px">支付成功</h2>
+  <p style="font-size:14px;color:var(--ep-gray-500);margin-bottom:24px">支付成功，请回到浏览器查看订单</p>
+  <button id="Close" class="ep-btn ep-btn-primary" style="height:44px;width:100%">关闭</button>
+</div>
+<script>
+document.body.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
+var ua=navigator.userAgent;
+if(ua.indexOf("AlipayClient")>-1){function A(f){window.AlipayJSBridge?f():document.addEventListener('AlipayJSBridgeReady',f,false)}A(function(){document.getElementById('Close').addEventListener('click',function(){AlipayJSBridge.call('popWindow')})})}
+else if(ua.indexOf("MicroMessenger")>-1){function W(f){"undefined"==typeof WeixinJSBridge?document.addEventListener?document.addEventListener('WeixinJSBridgeReady',f,!1):document.attachEvent&&(document.attachEvent('WeixinJSBridgeReady',f),document.attachEvent('onWeixinJSBridgeReady',f)):f()}W(function(){document.getElementById('Close').addEventListener('click',function(){WeixinJSBridge.call('closeWindow')})})}
+else{document.getElementById('Close').addEventListener('click',function(){window.opener=null;window.close()})}
 </script>
-	</body>
+</body>
 </html>

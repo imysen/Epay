@@ -1,38 +1,22 @@
 <?php
-/*
- * 支付失败提示页面
-*/
+// 支付失败/超时提示页
 if(!defined('IN_PLUGIN'))exit();
-?>
-<html class="weui-msg">
+?><!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>错误提示</title>
-    <link href="/assets/css/weui.min.css" rel="stylesheet">
-    <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+<title>支付失败</title>
+<link href="/assets/css/ep-ui.css?v=<?=filemtime(ROOT.'assets/css/ep-ui.css')?>" rel="stylesheet">
 </head>
-<body>
-<div class="container">
-<div class="page">
-<div class="weui-msg">
-    <div class="weui-msg__icon-area">
-        <i class="weui-icon-warn weui-icon_msg"></i>
-    </div>
-    <div class="weui-msg__text-area">
-        <h2 class="weui-msg__title">错误提示</h2>
-        <p class="weui-msg__desc">支付失败或支付超时，请返回重新发起支付</p>
-    </div>
-    <div class="weui-msg__extra-area">
-        <div class="weui-footer"><p class="weui-footer__links"></p></div>
-    </div>
+<body class="ep-app" style="background:var(--ep-gray-50);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px">
+<div style="max-width:360px;width:100%;background:#fff;border-radius:12px;box-shadow:var(--ep-shadow-sm);padding:48px 24px;text-align:center">
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--ep-danger-50);color:var(--ep-danger-600);margin:0 auto 20px;display:flex;align-items:center;justify-content:center">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+  </div>
+  <h2 style="font-size:20px;font-weight:600;color:var(--ep-gray-900);margin-bottom:8px">支付失败</h2>
+  <p style="font-size:14px;color:var(--ep-gray-500)">支付失败或支付超时，请返回重新发起支付</p>
 </div>
-</div>
-</div>
-<script>
-document.body.addEventListener('touchmove', function (event) {
-	event.preventDefault();
-},{ passive: false });
-</script>
+<script>document.body.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false})</script>
 </body>
 </html>
